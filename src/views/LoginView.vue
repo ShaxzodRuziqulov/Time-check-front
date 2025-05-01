@@ -42,7 +42,7 @@
 
 
 <script setup lang="ts">
-import type {LoginUser} from "../models/Product.ts";
+import type {LoginUser} from "../models/ProjectModels.ts";
 import {ref} from "vue";
 import {useRouter} from "vue-router";
 import {AuthService} from "../service/AuthService.ts";

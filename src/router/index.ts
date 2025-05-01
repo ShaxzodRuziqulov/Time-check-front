@@ -4,6 +4,8 @@ import HomeView from "../views/HomeView.vue";
 import MainLayout from "../layouts/Layout.vue";
 import LoginView from "../views/LoginView.vue";
 import NotFound from "../components/NotFound.vue";
+import DepartmentView from "../views/DepartmentView.vue";
+import EmployeeView from "../views/EmployeeView.vue";
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -19,6 +21,18 @@ const routes: Array<RouteRecordRaw> = [
                 component: HomeView,
                 meta: {requiresAuth: true}
             },
+            {
+                path: "/department",
+                name: "DepartmentView",
+                component: DepartmentView,
+                meta: {requiresAuth: true}
+            },{
+                path: "/employee",
+                name: "EmployeeView",
+                component: EmployeeView,
+                meta: {requiresAuth: true}
+            }
+
         ]
     },
     {
@@ -46,11 +60,9 @@ router.beforeEach((to, _, next) => {
 
     if (to.meta.requiresAuth && !isLoggedIn) {
         next("/login");
-    }
-    else if ((to.path === "/login" || to.path === "/signup") && isLoggedIn) {
+    } else if ((to.path === "/login" || to.path === "/signup") && isLoggedIn) {
         next("/dashboard");
-    }
-    else {
+    } else {
         next();
     }
 });

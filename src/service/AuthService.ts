@@ -1,4 +1,4 @@
-import type {LoginUser} from "../models/Product.ts";
+import type {LoginUser} from "../models/ProjectModels.ts";
 import axiosInstance from "../axios.ts";
 
 export const AuthService = {
