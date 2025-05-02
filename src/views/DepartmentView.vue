@@ -96,7 +96,10 @@ import {onMounted, ref} from "vue";
 import type {Department, updateDepartment} from "../models/ProjectModels.ts";
 import {ApiService} from "../service/ApiService.ts";
 
-const form = ref<updateDepartment>({name: '', id: 0, departmentStatus: ''})
+const form = ref<updateDepartment>({
+  name: '',
+  id: 0,
+  departmentStatus: ''})
 const departments = ref<Department[]>([])
 const isEditing = ref(false)
 const errorMessage = ref('')

@@ -28,7 +28,7 @@ export interface createUser {
     firstName: string
     lastName: string
     middleName: string
-    birthDate: Date
+    birthDate: string
     userStatus: string
     jobId: number
 }
@@ -36,9 +36,41 @@ export interface createUser {
 export interface updateUsers extends createUser {
     id: number
 }
-export interface Job{
+
+export interface Job {
     id: number
     positionStatus: string
     jobStatus: string
     departmentId: number
+}
+
+export interface createJob {
+    id?: number
+    positionStatus: string
+    jobStatus: string
+    departmentId: number
+}
+
+export interface updateJob extends createJob {
+
+}
+
+export interface User {
+    id: number
+    username: string
+    password: string
+    firstName: string
+    lastName: string
+    middleName: string
+    birthDate: string
+    userStatus: string
+    jobId: number
+    createdAt: Date
+    rolesId: number
+}
+
+export interface Role {
+    id: number
+    name: string
+    description: string
 }

@@ -16,10 +16,10 @@
       <router-link
           to="/employee"
           class="py-2 px-3 rounded-sm hover:bg-gray-700 transition duration-200"
-      >Xodimlar
+      >Job
       </router-link>
       <router-link
-          to="/"
+          to="/user"
           class="py-2 px-3 rounded-sm hover:bg-gray-700 transition duration-200"
       >Foydalanuvchilar
       </router-link>
