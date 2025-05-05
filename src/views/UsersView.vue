@@ -75,7 +75,7 @@
             Tanlang
           </option>
           <option v-for="job in jobs" :key="job.id" :value="job.id">
-            {{ job.positionStatus }}
+            {{ job.positionStatus }} ({{ getDepartmentName(job.departmentId) }})
           </option>
         </select>
         <div class="flex gap-4 mb-4">
@@ -153,13 +153,14 @@
 <script setup lang="ts">
 
 import {onMounted, ref} from "vue";
-import type {createUser, Job, Role, updateUsers, User} from "../models/ProjectModels.ts";
+import type {createUser, Department, Job, Role, updateUsers, User} from "../models/ProjectModels.ts";
 import {ApiService} from "../service/ApiService.ts";
 
 const jobs = ref<Job[]>([])
 const isEditing = ref(false)
 const users = ref<User[]>([])
 const roles = ref<Role[]>([])
+const departments = ref<Department[]>([])
 
 const form = ref<createUser>({
   birthDate: "",
@@ -198,16 +199,6 @@ const handleSubmit = async () => {
   }
 }
 
-
-const loadUsers = async () => {
-  try {
-    const res = await ApiService.getAllUsers()
-    console.log(res)
-    users.value = res.data
-  } catch (error) {
-    console.log(error)
-  }
-}
 const resetForm = () => {
   form.value = {
     birthDate: "",
@@ -265,10 +256,10 @@ const deleteUser = async (id: number) => {
 }
 
 const loadJob = async () => {
-  try{
+  try {
     const res = await ApiService.getAllJobs()
     jobs.value = res.data
-  }catch(error){
+  } catch (error) {
     console.log(error)
   }
 }
@@ -281,9 +272,33 @@ const getRoleName = (id: number) => {
   return role ? role.name : 'Noma’lum'
 }
 
+const getDepartmentName = (id: number) => {
+  const dep = departments.value.find(d => d.id === id);
+  return dep ? dep.name : "Nomalum";
+};
+
+const loadUsers = async () => {
+  try {
+    const res = await ApiService.getAllUsers()
+    console.log(res)
+    users.value = res.data
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const loadDepartments = async () => {
+  try {
+    const response = await ApiService.getAllDepartments();
+    departments.value = response.data;
+  } catch (e) {
+    console.error(e);
+  }
+};
 onMounted(() => {
   loadUsers()
   loadJob()
+  loadDepartments()
 })
 
 </script>

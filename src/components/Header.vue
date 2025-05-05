@@ -14,7 +14,7 @@
       >Department
       </router-link>
       <router-link
-          to="/employee"
+          to="/job"
           class="py-2 px-3 rounded-sm hover:bg-gray-700 transition duration-200"
       >Job
       </router-link>

@@ -2,6 +2,7 @@ import type {createDepartment, createJob, createUser, updateJob, updateUsers} fr
 import axiosInstance from "../axios.ts";
 
 export const ApiService = {
+
     async createDepartment(department: createDepartment) {
         const response = await axiosInstance.post(`/api/admin/department/create`, department)
         return response.data
@@ -15,6 +16,10 @@ export const ApiService = {
     async deleteDepartment(id: number) {
         return await axiosInstance.delete(`/api/admin/department/delete/${id}`)
     },
+    async countDepartment() {
+        return await axiosInstance.get('/api/admin/department/count')
+    },
+
 
     async createUser(user: createUser) {
         const response = await axiosInstance.post(`/api/admin/user/create`, user)
@@ -26,7 +31,10 @@ export const ApiService = {
         return await axiosInstance.get('/api/admin/user/activeUser')
     }, async deleteUser(id: number) {
         return await axiosInstance.delete(`/api/admin/user/delete/${id}`)
+    }, async countUser() {
+        return await axiosInstance.get('/api/admin/user/count')
     },
+
 
     async createJob(job: createJob) {
         const response = await axiosInstance.post(`/api/admin/job/create`, job)
@@ -40,5 +48,9 @@ export const ApiService = {
     },
     async deleteJob(id: number) {
         return await axiosInstance.delete(`/api/admin/job/delete/${id}`)
+    }, async getPositions() {
+        return await axiosInstance.get('/api/admin/job/positions')
+    }, async countJob() {
+        return await axiosInstance.get('/api/admin/job/count')
     }
 }

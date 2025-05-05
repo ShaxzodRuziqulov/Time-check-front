@@ -5,7 +5,7 @@ import MainLayout from "../layouts/Layout.vue";
 import LoginView from "../views/LoginView.vue";
 import NotFound from "../components/NotFound.vue";
 import DepartmentView from "../views/DepartmentView.vue";
-import EmployeeView from "../views/EmployeeView.vue";
+import JobView from "../views/JobView.vue";
 import UsersView from "../views/UsersView.vue";
 
 const routes: Array<RouteRecordRaw> = [
@@ -28,9 +28,9 @@ const routes: Array<RouteRecordRaw> = [
                 component: DepartmentView,
                 meta: {requiresAuth: true}
             }, {
-                path: "/employee",
-                name: "EmployeeView",
-                component: EmployeeView,
+                path: "/job",
+                name: "JobView",
+                component: JobView,
                 meta: {requiresAuth: true}
             }, {
                 path: "/user",

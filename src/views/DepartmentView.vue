@@ -107,8 +107,6 @@ const errorMessage = ref('')
 const loadDepartments = async () => {
   const res = await ApiService.getAllDepartments()
   departments.value = res.data
-  console.log("Departments:", departments.value)
-
 }
 
 const handleSubmit = async () => {

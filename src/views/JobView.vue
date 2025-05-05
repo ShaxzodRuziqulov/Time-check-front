@@ -12,8 +12,8 @@
             class="border border-gray-300 focus:ring-2 focus:ring-green-400 focus:outline-none rounded-lg p-3 w-full mb-4"
             required>
           <option value="" disabled>Lavozim tanlang</option>
-          <option v-for="job in jobs" :key="job.id" :value="job.positionStatus">
-            {{ job.positionStatus }}
+          <option v-for="status in positionStatuses" :key="status.name" :value="status.name">
+            {{ status.label }}
           </option>
         </select>
 
@@ -99,10 +99,16 @@ const departments = ref<Department[]>([]);
 const jobs = ref<Job[]>([]);
 const isEditing = ref(false);
 
+const positionStatuses = ref<{
+  name: string;
+  label: string;
+}[]>([]);
+
 const form = ref<createJob>({
   departmentId: 0,
   jobStatus: "",
   positionStatus: ""
+
 });
 const update = ref<updateJob>({
   id: 0,
@@ -145,6 +151,14 @@ const handleSubmit = async () => {
   }
 };
 
+const loadPositionStatues = async () => {
+  try {
+    const positionStatus = await ApiService.getPositions();
+    positionStatuses.value = positionStatus.data;
+  } catch (error) {
+    console.error(error);
+  }
+}
 const loadJobs = async () => {
   try {
     const response = await ApiService.getAllJobs();
@@ -183,5 +197,6 @@ const deleteJob = async (id: number) => {
 onMounted(() => {
   loadJobs();
   loadDepartments();
+  loadPositionStatues()
 });
 </script>
