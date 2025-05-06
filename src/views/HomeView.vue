@@ -118,6 +118,7 @@ const loadDepartments = async () => {
     console.log(error)
   }
 }
+
 const loadJobs = async () => {
   try {
     const rest = await ApiService.getAllJobs()
@@ -126,6 +127,7 @@ const loadJobs = async () => {
     console.log(err)
   }
 }
+
 const loadUsers = async () => {
   try {
     const rest = await ApiService.getAllUsers()
@@ -134,7 +136,6 @@ const loadUsers = async () => {
     console.log(error)
   }
 }
-
 
 const getJobName = (id: number) => {
   const job = jobs.value.find(j => j.id === id);
@@ -170,6 +171,7 @@ const filteredUsers = computed(() => {
     return matchDepartment && matchJob;
   });
 });
+
 onMounted(() => {
   loadStats()
   loadJobs()
@@ -177,6 +179,7 @@ onMounted(() => {
   loadDepartments()
   loadPositionStatues()
 })
+
 </script>
 
 <style scoped>

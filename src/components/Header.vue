@@ -23,7 +23,6 @@
           class="py-2 px-3 rounded-sm hover:bg-gray-700 transition duration-200"
       >Foydalanuvchilar
       </router-link>
-
       <router-link
           @click="logout"
           to="/login"

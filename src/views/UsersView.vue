@@ -1,6 +1,8 @@
 <template>
-  <div class="p-6 max-w-3xl mx-auto">
-    <div class="bg-white shadow-xl rounded-2xl p-6 transition-all duration-300 border border-gray-100">
+  <div>
+
+    <div
+        class="bg-white shadow-xl rounded-2xl p-6 transition-all duration-300 border border-gray-100 max-w-2xl mx-auto">
       <form @submit.prevent="handleSubmit" class="space-y-4">
         <h2 class="text-2xl font-bold mb-4 text-gray-800">
           Yangi hodim qo‘shish
@@ -78,6 +80,18 @@
             {{ job.positionStatus }} ({{ getDepartmentName(job.departmentId) }})
           </option>
         </select>
+
+        <label class="block text-gray-700 font-medium mb-1"> Role tayinlash </label>
+        <select
+            v-model="form.rolesId"
+            required
+            class="border border-gray-300 focus:ring-2 focus:ring-green-400 focus:outline-none rounded-lg p-3 w-full mb-4 placeholder-gray-400 transition-all duration-200"
+        >
+          <option v-for="role in roles" :key="role.id" :value="role.id">
+            {{ role.name.replace('ROLE_', '') }}
+          </option>
+        </select>
+
         <div class="flex gap-4 mb-4">
           <button
               type="submit"
@@ -126,7 +140,11 @@
           <td class="px-6 py-4">{{ user.userStatus }}</td>
           <td class="px-6 py-4">{{ user.birthDate }}</td>
           <td class="px-6 py-4">{{ getJobName(user.jobId) }}</td>
-          <td class="px-6 py-4">{{ getRoleName(user.rolesId) }}</td>
+          <td class="px-6 py-4">
+  <span v-for="(role, index) in user.roles" :key="role.id">
+    {{ role.name.replace('ROLE_', '') }}<span v-if="index < user.roles.length - 1">, </span>
+  </span>
+          </td>
           <td class="px-6 py-4">
             <div class="flex gap-2">
               <button
@@ -147,6 +165,7 @@
         </tbody>
       </table>
     </div>
+
   </div>
 </template>
 
@@ -159,10 +178,11 @@ import {ApiService} from "../service/ApiService.ts";
 const jobs = ref<Job[]>([])
 const isEditing = ref(false)
 const users = ref<User[]>([])
-const roles = ref<Role[]>([])
 const departments = ref<Department[]>([])
+const roles = ref<Role[]>([])
 
 const form = ref<createUser>({
+  rolesId: [],
   birthDate: "",
   jobId: 0,
   middleName: "",
@@ -172,7 +192,9 @@ const form = ref<createUser>({
   firstName: "",
   lastName: ""
 })
+
 const update = ref<updateUsers>({
+  rolesId: [],
   id: 0,
   birthDate: "",
   jobId: 0,
@@ -183,6 +205,7 @@ const update = ref<updateUsers>({
   firstName: "",
   lastName: ""
 })
+
 const handleSubmit = async () => {
   try {
     if (isEditing.value) {
@@ -201,6 +224,7 @@ const handleSubmit = async () => {
 
 const resetForm = () => {
   form.value = {
+    rolesId: [],
     birthDate: "",
     jobId: 0,
     middleName: "",
@@ -211,6 +235,7 @@ const resetForm = () => {
     lastName: ""
   }
   update.value = {
+    rolesId: [],
     id: 0,
     birthDate: "",
     jobId: 0,
@@ -224,30 +249,23 @@ const resetForm = () => {
 
   isEditing.value = false
 }
+
 const editMessage = (user: updateUsers) => {
+  const roleIds = user.roles?.map(role => role.id) || [];
+
   update.value = {
-    id: user.id,
-    birthDate: user.birthDate,
-    jobId: user.jobId,
-    middleName: user.middleName,
-    password: user.password,
-    userStatus: user.userStatus,
-    username: user.username,
-    firstName: user.firstName,
-    lastName: user.lastName
-  }
+    ...user,
+    rolesId: roleIds
+  };
+
   form.value = {
-    birthDate: user.birthDate,
-    jobId: user.jobId,
-    middleName: user.middleName,
-    password: user.password,
-    userStatus: user.userStatus,
-    username: user.username,
-    firstName: user.firstName,
-    lastName: user.lastName
-  }
-  isEditing.value = true
-}
+    ...user,
+    rolesId: roleIds
+  };
+
+  isEditing.value = true;
+};
+
 const deleteUser = async (id: number) => {
   if (confirm("Are you sure?")) {
     await ApiService.deleteUser(id)
@@ -266,10 +284,6 @@ const loadJob = async () => {
 const getJobName = (id: number) => {
   const job = jobs.value.find(j => j.id === id)
   return job ? job.positionStatus : 'Noma’lum'
-}
-const getRoleName = (id: number) => {
-  const role = roles.value.find(r => r.id === id)
-  return role ? role.name : 'Noma’lum'
 }
 
 const getDepartmentName = (id: number) => {
@@ -295,10 +309,21 @@ const loadDepartments = async () => {
     console.error(e);
   }
 };
+
+const loadRoles = async () => {
+  try {
+    const res = await ApiService.getAllRoles()
+    roles.value = res.data
+  } catch (e) {
+    console.error(e)
+  }
+}
+
 onMounted(() => {
   loadUsers()
   loadJob()
   loadDepartments()
+  loadRoles()
 })
 
 </script>

@@ -52,5 +52,8 @@ export const ApiService = {
         return await axiosInstance.get('/api/admin/job/positions')
     }, async countJob() {
         return await axiosInstance.get('/api/admin/job/count')
+    },
+    async getAllRoles() {
+        return await axiosInstance.get('/api/admin/role/roles')
     }
 }

@@ -31,10 +31,12 @@ export interface createUser {
     birthDate: string
     userStatus: string
     jobId: number
+    rolesId: number[]
 }
 
 export interface updateUsers extends createUser {
     id: number
+    roles?: Role[]
 }
 
 export interface Job {
@@ -66,7 +68,8 @@ export interface User {
     userStatus: string
     jobId: number
     createdAt: Date
-    rolesId: number
+    rolesId: number[]
+    roles: Role[]
 }
 
 export interface Role {
