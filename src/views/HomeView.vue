@@ -83,6 +83,7 @@ const departmentCount = ref(0)
 const departments = ref<Department[]>([])
 const jobs = ref<Job[]>([])
 const users = ref<User[]>([])
+const user = ref<User>();
 const selectedDepartmentId = ref<number | null>(null);
 const selectedJobId = ref<number | null>(null);
 
@@ -137,6 +138,16 @@ const loadUsers = async () => {
   }
 }
 
+const findCurrentUserId = async () => {
+  const userId = Number(localStorage.getItem('userId'));
+  try {
+    const response = await ApiService.findOneUserId(userId)
+    user.value = response.data;
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 const getJobName = (id: number) => {
   const job = jobs.value.find(j => j.id === id);
   return job ? job.positionStatus : "Nomalum";
@@ -176,6 +187,7 @@ onMounted(() => {
   loadStats()
   loadJobs()
   loadUsers()
+  findCurrentUserId()
   loadDepartments()
   loadPositionStatues()
 })

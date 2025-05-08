@@ -172,7 +172,7 @@
 <script setup lang="ts">
 
 import {onMounted, ref} from "vue";
-import type {createUser, Department, Job, Role, updateUsers, User} from "../models/ProjectModels.ts";
+import type {Department, Job, Role, updateUsers, User} from "../models/ProjectModels.ts";
 import {ApiService} from "../service/ApiService.ts";
 
 const jobs = ref<Job[]>([])
@@ -181,7 +181,9 @@ const users = ref<User[]>([])
 const departments = ref<Department[]>([])
 const roles = ref<Role[]>([])
 
-const form = ref<createUser>({
+const form = ref<updateUsers>({
+  id: 0,
+  roles: [],
   rolesId: [],
   birthDate: "",
   jobId: 0,
@@ -193,50 +195,27 @@ const form = ref<createUser>({
   lastName: ""
 })
 
-const update = ref<updateUsers>({
-  rolesId: [],
-  id: 0,
-  birthDate: "",
-  jobId: 0,
-  middleName: "",
-  password: "",
-  userStatus: "",
-  username: "",
-  firstName: "",
-  lastName: ""
-})
 
 const handleSubmit = async () => {
   try {
     if (isEditing.value) {
-      await ApiService.updateUser(update.value.id, {
-        ...form.value, id: update.value.id,
-      })
+      await ApiService.updateUser(form.value.id, form.value)
     } else {
       await ApiService.createUser(form.value)
     }
     resetForm()
     await loadUsers()
   } catch (error) {
-    console.log(error);
+    console.log(error)
   }
 }
+
 
 const resetForm = () => {
   form.value = {
-    rolesId: [],
-    birthDate: "",
-    jobId: 0,
-    middleName: "",
-    password: "",
-    userStatus: "",
-    username: "",
-    firstName: "",
-    lastName: ""
-  }
-  update.value = {
-    rolesId: [],
     id: 0,
+    roles: [],
+    rolesId: [],
     birthDate: "",
     jobId: 0,
     middleName: "",
@@ -246,25 +225,21 @@ const resetForm = () => {
     firstName: "",
     lastName: ""
   }
-
   isEditing.value = false
 }
+
 
 const editMessage = (user: updateUsers) => {
   const roleIds = user.roles?.map(role => role.id) || [];
 
-  update.value = {
-    ...user,
-    rolesId: roleIds
-  };
-
   form.value = {
     ...user,
     rolesId: roleIds
-  };
+  }
 
-  isEditing.value = true;
-};
+  isEditing.value = true
+}
+
 
 const deleteUser = async (id: number) => {
   if (confirm("Are you sure?")) {

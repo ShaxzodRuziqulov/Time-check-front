@@ -1,6 +1,6 @@
 <template>
-  <div class="p-6 max-w-xl mx-auto">
-    <div class="bg-white shadow-xl rounded-2xl p-6 transition-all duration-300 border border-gray-100">
+  <div class="p-6  ">
+    <div class="bg-white shadow-xl rounded-2xl p-6 transition-all duration-300 border border-gray-100 max-w-xl mx-auto">
       <form @submit.prevent="handleSubmit">
         <h2 class="text-2xl font-bold mb-4 text-gray-800">
           {{ isEditing ? "Edit Job" : "Create Job" }}
@@ -92,7 +92,7 @@
 
 <script setup lang="ts">
 import {onMounted, ref} from "vue";
-import type {createJob, Department, Job, updateJob} from "../models/ProjectModels.ts";
+import type { Department, Job, updateJob} from "../models/ProjectModels.ts";
 import {ApiService} from "../service/ApiService.ts";
 
 const departments = ref<Department[]>([]);
@@ -104,13 +104,7 @@ const positionStatuses = ref<{
   label: string;
 }[]>([]);
 
-const form = ref<createJob>({
-  departmentId: 0,
-  jobStatus: "",
-  positionStatus: ""
-
-});
-const update = ref<updateJob>({
+const form = ref<updateJob>({
   id: 0,
   departmentId: 0,
   jobStatus: "",
@@ -118,12 +112,8 @@ const update = ref<updateJob>({
 });
 
 const resetForm = () => {
+
   form.value = {
-    departmentId: 0,
-    jobStatus: "",
-    positionStatus: ""
-  };
-  update.value = {
     id: 0,
     departmentId: 0,
     jobStatus: "",
@@ -139,8 +129,8 @@ const getDepartmentName = (id: number) => {
 
 const handleSubmit = async () => {
   try {
-    if (isEditing.value && update.value.id) {
-      await ApiService.updateJob(update.value.id, form.value);
+    if (isEditing.value && form.value.id) {
+      await ApiService.updateJob(form.value.id, form.value);
     } else {
       await ApiService.createJob(form.value);
     }
@@ -178,14 +168,10 @@ const loadDepartments = async () => {
 };
 
 const editMessage = (job: updateJob) => {
-  form.value = {
-    departmentId: job.departmentId,
-    jobStatus: job.jobStatus,
-    positionStatus: job.positionStatus
-  };
-  update.value.id = job.id;
+  form.value = { ...job };
   isEditing.value = true;
 };
+
 
 const deleteJob = async (id: number) => {
   if (confirm("Rostdan ham o'chirmoqchimisiz?")) {

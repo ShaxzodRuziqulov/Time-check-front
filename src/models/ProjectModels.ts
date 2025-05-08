@@ -47,14 +47,13 @@ export interface Job {
 }
 
 export interface createJob {
-    id?: number
     positionStatus: string
     jobStatus: string
     departmentId: number
 }
 
 export interface updateJob extends createJob {
-
+    id: number
 }
 
 export interface User {
@@ -76,4 +75,25 @@ export interface Role {
     id: number
     name: string
     description: string
+}
+
+export interface TimeTrack {
+    id: number
+    startTime: Date
+    endTime: Date
+    userId: number
+    delayReason?: string
+    endReason?: string
+}
+
+export interface createTimeTrack {
+    startTime?: Date
+    endTime?: Date
+    userId: number
+    delayReason?: string
+    endReason?: string
+}
+
+export interface updateTimeTrack {
+    id: number
 }

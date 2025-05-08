@@ -7,6 +7,8 @@ import NotFound from "../components/NotFound.vue";
 import DepartmentView from "../views/DepartmentView.vue";
 import JobView from "../views/JobView.vue";
 import UsersView from "../views/UsersView.vue";
+import TimeTrackPage from "../views/TimeTrackPage.vue";
+import TimeTrackAdmin from "../views/TimeTrackAdmin.vue";
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -37,7 +39,19 @@ const routes: Array<RouteRecordRaw> = [
                 name: "UsersView",
                 component: UsersView,
                 meta: {requiresAuth: true}
+            },{
+                path: "/time-track",
+                name: "TimeTrackPage",
+                component: TimeTrackPage,
+                meta: { requiresAuth: true, role: 'USER' }
+            },
+            {
+                path: "/admin/time-track",
+                name: "AdminTimeTrackPage",
+                component: TimeTrackAdmin,
+                meta: { requiresAuth: true, role: 'ADMIN' }
             }
+
 
         ]
     },

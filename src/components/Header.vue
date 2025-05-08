@@ -24,6 +24,16 @@
       >Foydalanuvchilar
       </router-link>
       <router-link
+          to="/time-track"
+          class="py-2 px-3 rounded-sm hover:bg-gray-700 transition duration-200"
+      >Ish vaqtini belgilash
+      </router-link>
+      <router-link
+          to="/admin/time-track"
+          class="py-2 px-3 rounded-sm hover:bg-gray-700 transition duration-200"
+      >Ish vaqti statistikasi
+      </router-link>
+      <router-link
           @click="logout"
           to="/login"
           class="py-2 px-3 rounded-sm hover:bg-gray-700 transition duration-200"

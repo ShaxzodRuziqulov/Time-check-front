@@ -57,6 +57,7 @@ const handleSubmit = async () => {
   try {
     const response = await AuthService.login(form.value);
     localStorage.setItem('token', response?.token);
+    localStorage.setItem('userId', response?.userId);
     await router.push({name: 'DashboardView'});
   } catch (err) {
     alert('Tizimga kirishda xatolik: Login yoki parolda hatolik bor');
