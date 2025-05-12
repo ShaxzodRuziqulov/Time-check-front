@@ -3,6 +3,7 @@ export interface LoginUser {
     password: string;
 }
 
+
 export interface createDepartment {
     name: string;
     status?: string;
@@ -22,6 +23,7 @@ export interface Department {
     departmentStatus?: string
 }
 
+
 export interface createUser {
     username: string
     password: string
@@ -38,6 +40,7 @@ export interface updateUsers extends createUser {
     id: number
     roles: Role[]
 }
+
 
 export interface Job {
     id: number
@@ -56,6 +59,7 @@ export interface updateJob extends createJob {
     id?: number
 }
 
+
 export interface User {
     id: number
     username: string
@@ -71,29 +75,49 @@ export interface User {
     roles: Role[]
 }
 
+
 export interface Role {
     id: number
     name: string
     description: string
 }
 
+
 export interface TimeTrack {
     id: number
-    startTime: Date
-    endTime: Date
+    startTime?: string
+    endTime?: string
     userId: number
-    delayReason?: string
-    endReason?: string
+    delayReason: string
+    endReason: string
 }
 
 export interface createTimeTrack {
-    startTime?: Date
-    endTime?: Date
+    startTime?: string
+    endTime?: string
     userId: number
-    delayReason?: string
-    endReason?: string
+    delayReason: string
+    endReason: string
 }
 
-export interface updateTimeTrack {
+export interface updateTimeTrack extends createTimeTrack {
+    id?: number
+}
+
+
+export interface TrackSettings {
     id: number
+    fromTime: string
+    toTime: string
+    trackSettingsStatus: string
+}
+
+export interface createTrackSettings {
+    fromTime: string
+    toTime: string
+    trackSettingsStatus: string
+}
+
+export interface updateTrackSettings extends createTrackSettings {
+    id?: number
 }

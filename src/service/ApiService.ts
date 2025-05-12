@@ -2,9 +2,11 @@ import type {
     createDepartment,
     createJob,
     createTimeTrack,
+    createTrackSettings,
     createUser,
     updateJob,
     updateTimeTrack,
+    updateTrackSettings,
     updateUsers
 } from "../models/ProjectModels.ts";
 import axiosInstance from "../axios.ts";
@@ -36,7 +38,7 @@ export const ApiService = {
         return await axiosInstance.delete(`/api/admin/user/delete/${id}`)
     }, async countUser() {
         return await axiosInstance.get('/api/admin/user/count')
-    },async findOneUserId(id: number) {
+    }, async findOneUserId(id: number) {
         return await axiosInstance.get(`/api/admin/user/${id}`)
     },
 
@@ -66,18 +68,30 @@ export const ApiService = {
         return await axiosInstance.put(`/api/admin/time-track/update/${id}`, timeTrack)
     }, async completeTimeTrack(id: number) {
         return await axiosInstance.get(`/api/admin/time-track/complete/${id}`)
-    }, async findAll() {
+    }, async findAllTimeTracks() {
         return await axiosInstance.get('/api/admin/time-track/all')
     }, async findById(id: number) {
         return await axiosInstance.get(`/api/admin/time-track/${id}`)
-    }, async delete(id: number) {
+    }, async deleteTimeTrack(id: number) {
         return await axiosInstance.delete(`/api/admin/time-track/delete/${id}`)
     }, async checkIfUserCanLeave(id: number) {
         return await axiosInstance.put(`/api/admin/time-track/check/${id}`)
     },
 
 
+    async createTrackSettings(track: createTrackSettings) {
+        const response = await axiosInstance.post(`/api/admin/track-settings/create`, track)
+        return response.data
+    },
+    async updateTrackSettings(id: number, track: updateTrackSettings) {
+        return await axiosInstance.put(`/api/admin/track-settings/update/${id}`, track)
+    },
     async getActiveTrackSettings() {
         return await axiosInstance.get('/api/admin/track-settings/allActive')
+    }, async findByTrackSettings(id: number) {
+        return await axiosInstance.get(`/api/admin/track-settings/${id}`)
+    }, async deleteActiveTrackSettings(id: number) {
+        return await axiosInstance.delete(`/api/admin/track-settings/delete/${id}`)
     }
+
 }

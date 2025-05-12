@@ -159,6 +159,7 @@ const loadPositionStatues = async () => {
     console.error(error);
   }
 }
+
 const loadJobs = async () => {
   try {
     const response = await ApiService.getAllJobs();
@@ -178,7 +179,7 @@ const loadDepartments = async () => {
 };
 
 const editMessage = (job: updateJob) => {
-  form.value = { ...job };
+  form.value = {...job};
   isEditing.value = true;
 };
 

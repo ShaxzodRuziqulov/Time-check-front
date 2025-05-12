@@ -6,23 +6,6 @@
       <form @submit.prevent="startWork">
         <div class="flex flex-col space-y-4 items-center w-full">
 
-          <div class="w-full flex items-center space-x-2">
-            <input type="checkbox" id="isLate" v-model="isLate" class="w-4 h-4" />
-            <label for="isLate" class="text-gray-700">Kechikdim</label>
-          </div>
-
-          <div class="w-full" v-if="isLate">
-            <label class="block text-gray-700 font-medium mb-1">Kechikish sababi</label>
-            <input
-                v-model="delayReason"
-                type="text"
-                :required="isLate"
-                :disabled="!isLate"
-                placeholder="Kechikish sababini kiriting"
-                class="border border-gray-300 focus:ring-2 focus:ring-green-400 focus:outline-none rounded-lg p-3 w-full placeholder-gray-400 transition-all duration-200"
-            />
-          </div>
-
           <div class="flex space-x-4">
             <button
                 type="submit"
@@ -49,8 +32,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { ApiService } from "../service/ApiService.ts";
+import {ref} from "vue";
+import {ApiService} from "../service/ApiService.ts";
 
 
 const userId = Number(localStorage.getItem("userId"));
