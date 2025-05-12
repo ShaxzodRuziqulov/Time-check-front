@@ -92,7 +92,7 @@
 
 <script setup lang="ts">
 import {onMounted, ref} from "vue";
-import type { Department, Job, updateJob} from "../models/ProjectModels.ts";
+import type {createJob, Department, Job, updateJob} from "../models/ProjectModels.ts";
 import {ApiService} from "../service/ApiService.ts";
 
 const departments = ref<Department[]>([]);
@@ -104,7 +104,13 @@ const positionStatuses = ref<{
   label: string;
 }[]>([]);
 
-const form = ref<updateJob>({
+const form = ref<createJob>({
+  departmentId: 0,
+  jobStatus: "",
+  positionStatus: ""
+
+});
+const update = ref<updateJob>({
   id: 0,
   departmentId: 0,
   jobStatus: "",
@@ -112,8 +118,12 @@ const form = ref<updateJob>({
 });
 
 const resetForm = () => {
-
   form.value = {
+    departmentId: 0,
+    jobStatus: "",
+    positionStatus: ""
+  };
+  update.value = {
     id: 0,
     departmentId: 0,
     jobStatus: "",
@@ -129,8 +139,8 @@ const getDepartmentName = (id: number) => {
 
 const handleSubmit = async () => {
   try {
-    if (isEditing.value && form.value.id) {
-      await ApiService.updateJob(form.value.id, form.value);
+    if (isEditing.value && update.value.id) {
+      await ApiService.updateJob(update.value.id, form.value);
     } else {
       await ApiService.createJob(form.value);
     }

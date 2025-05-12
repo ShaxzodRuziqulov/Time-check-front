@@ -48,11 +48,11 @@
         <label class="block text-gray-700 font-medium mb-1"> Parol</label>
         <input
             v-model="form.password"
-            type="password"
+            type="text"
             class="border border-gray-300 focus:ring-2 focus:ring-green-400 focus:outline-none rounded-lg p-3 w-full mb-4 placeholder-gray-400 transition-all duration-200"
-            placeholder="Password"
-            required
+            :placeholder="isEditing?'Yangi parol (majburiy emas)' : 'Parol kiriting'"
         >
+
         <label class="block text-gray-700 font-medium mb-1">Status</label>
         <select
             required
@@ -83,7 +83,9 @@
 
         <label class="block text-gray-700 font-medium mb-1"> Role tayinlash </label>
         <select
-            v-model="form.rolesId"
+            v-model="selectedRoleIds"
+            @change="updateSelectedRoles"
+            multiple
             required
             class="border border-gray-300 focus:ring-2 focus:ring-green-400 focus:outline-none rounded-lg p-3 w-full mb-4 placeholder-gray-400 transition-all duration-200"
         >
@@ -141,9 +143,9 @@
           <td class="px-6 py-4">{{ user.birthDate }}</td>
           <td class="px-6 py-4">{{ getJobName(user.jobId) }}</td>
           <td class="px-6 py-4">
-  <span v-for="(role, index) in user.roles" :key="role.id">
-    {{ role.name.replace('ROLE_', '') }}<span v-if="index < user.roles.length - 1">, </span>
-  </span>
+              <span v-for="(role, index) in user.roles" :key="role.id">
+                {{ role.name.replace('ROLE_', '') }}<span v-if="index < user.roles.length - 1">, </span>
+              </span>
           </td>
           <td class="px-6 py-4">
             <div class="flex gap-2">
@@ -172,7 +174,7 @@
 <script setup lang="ts">
 
 import {onMounted, ref} from "vue";
-import type {Department, Job, Role, updateUsers, User} from "../models/ProjectModels.ts";
+import type {createUser, Department, Job, Role, updateUsers, User} from "../models/ProjectModels.ts";
 import {ApiService} from "../service/ApiService.ts";
 
 const jobs = ref<Job[]>([])
@@ -180,11 +182,27 @@ const isEditing = ref(false)
 const users = ref<User[]>([])
 const departments = ref<Department[]>([])
 const roles = ref<Role[]>([])
+const selectedRoleIds = ref<number[]>([])
 
-const form = ref<updateUsers>({
-  id: 0,
+const updateSelectedRoles = () => {
+  form.value.roles = roles.value.filter(role => selectedRoleIds.value.includes(role.id))
+}
+
+const form = ref<createUser>({
   roles: [],
-  rolesId: [],
+  birthDate: "",
+  jobId: 0,
+  middleName: "",
+  password: "",
+  userStatus: "",
+  username: "",
+  firstName: "",
+  lastName: ""
+})
+
+const update = ref<updateUsers>({
+  roles: [],
+  id: 0,
   birthDate: "",
   jobId: 0,
   middleName: "",
@@ -199,23 +217,22 @@ const form = ref<updateUsers>({
 const handleSubmit = async () => {
   try {
     if (isEditing.value) {
-      await ApiService.updateUser(form.value.id, form.value)
+      await ApiService.updateUser(update.value.id, {
+        ...form.value, id: update.value.id,
+      })
     } else {
       await ApiService.createUser(form.value)
     }
     resetForm()
     await loadUsers()
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
 }
 
-
 const resetForm = () => {
   form.value = {
-    id: 0,
     roles: [],
-    rolesId: [],
     birthDate: "",
     jobId: 0,
     middleName: "",
@@ -225,21 +242,32 @@ const resetForm = () => {
     firstName: "",
     lastName: ""
   }
+  update.value = {
+    roles: [],
+    id: 0,
+    birthDate: "",
+    jobId: 0,
+    middleName: "",
+    password: "",
+    userStatus: "",
+    username: "",
+    firstName: "",
+    lastName: ""
+  }
+
   isEditing.value = false
 }
 
-
 const editMessage = (user: updateUsers) => {
-  const roleIds = user.roles?.map(role => role.id) || [];
-
+  selectedRoleIds.value = user.roles?.map(role => role.id) || []
   form.value = {
     ...user,
-    rolesId: roleIds
+    password: "",
+    roles: user.roles || []
   }
-
+  update.value.id = user.id
   isEditing.value = true
 }
-
 
 const deleteUser = async (id: number) => {
   if (confirm("Are you sure?")) {
@@ -256,6 +284,7 @@ const loadJob = async () => {
     console.log(error)
   }
 }
+
 const getJobName = (id: number) => {
   const job = jobs.value.find(j => j.id === id)
   return job ? job.positionStatus : 'Noma’lum'
@@ -302,7 +331,6 @@ onMounted(() => {
 })
 
 </script>
-
 
 <style scoped>
 

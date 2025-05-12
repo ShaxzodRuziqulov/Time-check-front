@@ -39,21 +39,22 @@ const routes: Array<RouteRecordRaw> = [
                 name: "UsersView",
                 component: UsersView,
                 meta: {requiresAuth: true}
-            },{
-                path: "/time-track",
-                name: "TimeTrackPage",
-                component: TimeTrackPage,
-                meta: { requiresAuth: true, role: 'USER' }
             },
             {
                 path: "/admin/time-track",
                 name: "AdminTimeTrackPage",
                 component: TimeTrackAdmin,
-                meta: { requiresAuth: true, role: 'ADMIN' }
+                meta: {requiresAuth: true}
             }
 
 
         ]
+    },
+    {
+        path: "/time-track",
+        name: "TimeTrackPage",
+        component: TimeTrackPage,
+        meta: {requiresAuth: true}
     },
     {
         path: "/login",
