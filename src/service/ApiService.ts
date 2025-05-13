@@ -62,20 +62,20 @@ export const ApiService = {
 
 
     async createTimeTrack(timeTrack: createTimeTrack) {
-        const response = await axiosInstance.post(`/api/admin/time-track/create`, timeTrack)
+        const response = await axiosInstance.post(`/api/user/time-track/create`, timeTrack)
         return response.data
     }, async updateTimeTrack(id: number, timeTrack: updateTimeTrack) {
-        return await axiosInstance.put(`/api/admin/time-track/update/${id}`, timeTrack)
+        return await axiosInstance.put(`/api/user/time-track/update/${id}`, timeTrack)
     }, async completeTimeTrack(id: number) {
-        return await axiosInstance.get(`/api/admin/time-track/complete/${id}`)
+        return await axiosInstance.get(`/api/user/time-track/complete/${id}`)
     }, async findAllTimeTracks() {
-        return await axiosInstance.get('/api/admin/time-track/all')
+        return await axiosInstance.get('/api/user/time-track/all')
     }, async findById(id: number) {
-        return await axiosInstance.get(`/api/admin/time-track/${id}`)
+        return await axiosInstance.get(`/api/user/time-track/${id}`)
     }, async deleteTimeTrack(id: number) {
-        return await axiosInstance.delete(`/api/admin/time-track/delete/${id}`)
+        return await axiosInstance.delete(`/api/user/time-track/delete/${id}`)
     }, async checkIfUserCanLeave(id: number) {
-        return await axiosInstance.put(`/api/admin/time-track/check/${id}`)
+        return await axiosInstance.put(`/api/user/time-track/check/${id}`)
     },
 
 

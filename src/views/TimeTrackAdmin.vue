@@ -98,11 +98,17 @@
               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-400"/>
         </div>
         <div>
-          <label class="block text-gray-600 font-medium mb-1">Foydalanuvchi</label>
-          <input
+          <label
+              class="block text-gray-600 font-medium mb-1">Foydalanuvchi</label>
+
+          <select
               v-model="createTimeTrack.userId"
-              type="text"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-400"/>
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400">
+            <option>Foydalanuvchini tanlang</option>
+            <option v-for="user in users" :key="user.id" :value="user.id">
+              {{ user.firstName }}
+            </option>
+          </select>
         </div>
       </div>
 
@@ -133,6 +139,7 @@
             <th class="px-4 py-3 text-left">Ota ismi</th>
             <th class="px-4 py-3 text-left">Boshlagan vaqt</th>
             <th class="px-4 py-3 text-left">Tugatgan vaqt</th>
+            <th class="px-4 py-3 text-left">Qachon</th>
             <th class="px-4 py-3 text-left">Amallar</th>
           </tr>
           </thead>
@@ -146,6 +153,7 @@
             <td class="px-4 py-3">{{ getMiddleName(track.userId) }}</td>
             <td class="px-4 py-3">{{ track.startTime }}</td>
             <td class="px-4 py-3">{{ track.endTime }}</td>
+            <td class="px-4 py-3">{{ track.createdAt }}</td>
             <td class="px-4 py-3 flex gap-2">
               <button @click="editTimeTrack(track)"
                       class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md">Edit
@@ -305,7 +313,6 @@ const submitTimeTrack = async () => {
 
 const editTimeTrack = (timeTrack: updateTimeTrack) => {
   createTimeTrack.value = {...timeTrack}
-  updateTimeTrack.value = {...timeTrack}
   isEditing.value = true
 }
 

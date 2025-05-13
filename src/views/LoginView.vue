@@ -56,7 +56,11 @@ const router = useRouter();
 const handleSubmit = async () => {
   try {
     const response = await AuthService.login(form.value);
-    localStorage.setItem('token', response?.token);
+
+    localStorage.setItem('token', response.token);
+    localStorage.setItem('userId', response.userId);
+    localStorage.setItem('role', response.role);
+
     await router.push({name: 'DashboardView'});
     console.log(response);
   } catch (err) {

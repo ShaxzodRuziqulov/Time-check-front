@@ -44,6 +44,8 @@ import router from "../router";
 
 const logout = () => {
   localStorage.removeItem("token");
+  localStorage.removeItem("userId");
+  localStorage.removeItem("role");
   router.push("/login");
 };
 </script>

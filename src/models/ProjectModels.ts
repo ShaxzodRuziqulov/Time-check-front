@@ -90,14 +90,15 @@ export interface TimeTrack {
     userId: number
     delayReason: string
     endReason: string
+    createdAt: string
 }
 
 export interface createTimeTrack {
     startTime?: string
     endTime?: string
     userId: number
-    delayReason: string
-    endReason: string
+    delayReason?: string
+    endReason?: string
 }
 
 export interface updateTimeTrack extends createTimeTrack {
