@@ -1,6 +1,15 @@
 <template>
   <div class="flex items-center justify-center min-h-screen">
     <div class="p-10 w-full max-w-7xl mx-auto bg-white rounded-3xl shadow-2xl">
+
+      <button
+          type="button"
+          @click="logout"
+          class="bg-black hover:bg-white hover:text-black transition-colors duration-300 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-black disabled:opacity-50 disabled:cursor-not-allowed float-right"
+      >
+        Log out
+      </button>
+
       <h2 class="text-3xl font-semibold text-gray-800 mb-6 border-b pb-2">Ish vaqtini boshqarish</h2>
 
       <form @submit.prevent="startWork">
@@ -49,9 +58,9 @@
             <td class="px-4 py-3">{{ index + 1 }}</td>
             <td class="px-4 py-3">{{ track.delayReason }}</td>
             <td class="px-4 py-3">{{ track.endReason }}</td>
-            <td class="px-4 py-3">{{ getUserName(track.userId) }}</td>
-            <td class="px-4 py-3">{{ getLastName(track.userId) }}</td>
-            <td class="px-4 py-3">{{ getMiddleName(track.userId) }}</td>
+            <td class="px-4 py-3">{{ track.firstName }}</td>
+            <td class="px-4 py-3">{{ track.lastName }}</td>
+            <td class="px-4 py-3">{{ track.middleName }}</td>
             <td class="px-4 py-3">{{ track.startTime }}</td>
             <td class="px-4 py-3">{{ track.endTime }}</td>
             <td class="px-4 py-3">{{ track.createdAt }}</td>
@@ -66,11 +75,11 @@
 <script setup lang="ts">
 import {computed, onMounted, ref} from "vue";
 import {ApiService} from "../service/ApiService.ts";
-import type {TimeTrack, User} from "../models/ProjectModels.ts";
+import type {TimeTrackUser,} from "../models/ProjectModels.ts";
+import router from "../router";
 
-const timeTracks = ref<TimeTrack[]>([])
+const timeTracks = ref<TimeTrackUser[]>([])
 const userId = Number(localStorage.getItem("userId"));
-const users = ref<User[]>([])
 const isLoading = ref(false);
 
 const startWork = async () => {
@@ -117,33 +126,9 @@ const completeWork = async () => {
   }
 };
 
-const getUserName = (id: number) => {
-  const user = users.value.find(user => user.id === id)
-  return user ? user.firstName : "Nomalum"
-}
-
-const getLastName = (id: number) => {
-  const user = users.value.find(user => user.id === id)
-  return user ? user.lastName : "Nomalum"
-}
-
-const getMiddleName = (id: number) => {
-  const user = users.value.find(user => user.id === id)
-  return user ? user.middleName : "Nomalum"
-}
-
-const loadUser = async () => {
-  try {
-    const response = await ApiService.getAllUsers();
-    users.value = response.data;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
 const loadTimeTrack = async () => {
   try {
-    const response = await ApiService.findAllTimeTracks();
+    const response = await ApiService.getAllWithUserDetails();
     timeTracks.value = response.data;
   } catch (error) {
     console.log(error);
@@ -154,8 +139,14 @@ const filteredTimeTracks = computed(() => {
   return timeTracks.value.filter(track => track.userId === userId);
 });
 
+const logout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("userId");
+  localStorage.removeItem("role");
+  router.push("/login");
+};
+
 onMounted(() => {
-  loadUser();
   loadTimeTrack()
 })
 

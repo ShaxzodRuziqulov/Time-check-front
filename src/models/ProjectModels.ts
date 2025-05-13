@@ -92,7 +92,18 @@ export interface TimeTrack {
     endReason: string
     createdAt: string
 }
-
+export interface TimeTrackUser {
+    id: number
+    firstName: string
+    lastName: string
+    middleName: string
+    startTime: string
+    endTime: string
+    userId: number
+    delayReason: string
+    endReason: string
+    createdAt: string
+}
 export interface createTimeTrack {
     startTime?: string
     endTime?: string

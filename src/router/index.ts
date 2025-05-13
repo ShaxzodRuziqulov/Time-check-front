@@ -22,13 +22,17 @@ const routes: Array<RouteRecordRaw> = [
                 path: "/dashboard",
                 name: "DashboardView",
                 component: HomeView,
-                meta: {requiresAuth: true},
+                meta: {
+                    requiresAuth: true,
+                },
             },
             {
                 path: "/department",
                 name: "DepartmentView",
                 component: DepartmentView,
-                meta: {requiresAuth: true},
+                meta: {
+                    requiresAuth: true,
+                },
             }, {
                 path: "/job",
                 name: "JobView",
@@ -45,17 +49,14 @@ const routes: Array<RouteRecordRaw> = [
                 name: "AdminTimeTrackPage",
                 component: TimeTrackAdmin,
                 meta: {requiresAuth: true},
-            }
-
+            },
         ]
-    },
-    {
+    }, {
         path: '/time-track',
         name: 'TimeTrackPage',
         component: TimeTrackPage,
         meta: {requiresAuth: true},
-    }
-    ,
+    },
     {
         path: "/login",
         name: 'Login',
@@ -65,7 +66,7 @@ const routes: Array<RouteRecordRaw> = [
         path: '/:pathMatch(.*)*',
         name: 'NotFound',
         component: NotFound,
-        meta: {requiresAuth: true},
+        meta: {requiresAuth: true}
     }
 
 ];
@@ -76,22 +77,26 @@ const router = createRouter({
     routes
 })
 
-
 router.beforeEach((to, _, next) => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
-    const isLoggedIn = !!token;
 
-    const allowedRoles = to.meta.roles as string[] | undefined;
-    if (to.meta.requiresAuth && !isLoggedIn) {
-        next("/login");
-    } else if (allowedRoles && !allowedRoles.includes(role || "")) {
-        next("/dashboard"); // yoki 403 sahifaga
-    } else if ((to.path === "/login" || to.path === "/signup") && isLoggedIn) {
-        next("/dashboard");
-    } else {
-        next();
+    if (!token && to.meta.requiresAuth) {
+        return next({name: 'Login'});
     }
+
+    if (token && to.name === 'Login') {
+        if (role === 'ROLE_ADMIN') return next({path: '/dashboard'});
+        if (role === 'ROLE_USER') return next({path: '/time-track'});
+    }
+
+    if (token && role === 'ROLE_USER') {
+        if (to.path !== '/time-track') {
+            return next({path: '/time-track'});
+        }
+    }
+
+    return next();
 });
 
 

@@ -74,6 +74,8 @@ export const ApiService = {
         return await axiosInstance.get(`/api/user/time-track/${id}`)
     }, async deleteTimeTrack(id: number) {
         return await axiosInstance.delete(`/api/user/time-track/delete/${id}`)
+    }, async getAllWithUserDetails() {
+        return await axiosInstance.get('/api/user/time-track/users')
     }, async checkIfUserCanLeave(id: number) {
         return await axiosInstance.put(`/api/user/time-track/check/${id}`)
     },

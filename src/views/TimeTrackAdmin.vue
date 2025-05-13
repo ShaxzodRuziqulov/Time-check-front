@@ -104,7 +104,7 @@
           <select
               v-model="createTimeTrack.userId"
               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400">
-            <option>Foydalanuvchini tanlang</option>
+            <option disabled>Foydalanuvchini tanlang</option>
             <option v-for="user in users" :key="user.id" :value="user.id">
               {{ user.firstName }}
             </option>
