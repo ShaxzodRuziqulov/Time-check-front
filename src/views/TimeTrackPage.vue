@@ -63,7 +63,8 @@
             <td class="px-4 py-3">{{ track.middleName }}</td>
             <td class="px-4 py-3">{{ track.startTime }}</td>
             <td class="px-4 py-3">{{ track.endTime }}</td>
-            <td class="px-4 py-3">{{ track.createdAt }}</td>
+            <td class="px-4 py-3">{{ dayjs(track.createdAt).format('YYYY-MM-DD') }}</td>
+
           </tr>
           </tbody>
         </table>
@@ -77,6 +78,8 @@ import {computed, onMounted, ref} from "vue";
 import {ApiService} from "../service/ApiService.ts";
 import type {TimeTrackUser,} from "../models/ProjectModels.ts";
 import router from "../router";
+import dayjs from 'dayjs';
+
 
 const timeTracks = ref<TimeTrackUser[]>([])
 const userId = Number(localStorage.getItem("userId"));
@@ -136,6 +139,7 @@ const loadTimeTrack = async () => {
 }
 
 const filteredTimeTracks = computed(() => {
+  timeTracks.value.sort((a, b) => b.id - a.id)
   return timeTracks.value.filter(track => track.userId === userId);
 });
 

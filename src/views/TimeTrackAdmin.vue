@@ -144,7 +144,7 @@
           </tr>
           </thead>
           <tbody>
-          <tr v-for="(track,index) in timeTracks" :key="track.id" class="hover:bg-gray-50 border-t">
+          <tr v-for="(track, index) in sortTimeTrack" :key="track.id" class="hover:bg-gray-50 border-t">
             <td class="px-4 py-3">{{ index + 1 }}</td>
             <td class="px-4 py-3">{{ track.delayReason }}</td>
             <td class="px-4 py-3">{{ track.endReason }}</td>
@@ -153,7 +153,7 @@
             <td class="px-4 py-3">{{ getMiddleName(track.userId) }}</td>
             <td class="px-4 py-3">{{ track.startTime }}</td>
             <td class="px-4 py-3">{{ track.endTime }}</td>
-            <td class="px-4 py-3">{{ track.createdAt }}</td>
+            <td class="px-4 py-3">{{ dayjs(track.createdAt).format('YYYY-MM-DD') }}</td>
             <td class="px-4 py-3 flex gap-2">
               <button @click="editTimeTrack(track)"
                       class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md">Edit
@@ -173,7 +173,7 @@
 
 
 <script setup lang="ts">
-import {onMounted, ref} from 'vue'
+import {computed, onMounted, ref} from 'vue'
 import type {
   createTimeTrack,
   createTrackSettings,
@@ -184,6 +184,7 @@ import type {
   User
 } from "../models/ProjectModels.ts";
 import {ApiService} from "../service/ApiService.ts";
+import dayjs from 'dayjs';
 
 const isEditing = ref(false);
 const trackSettings = ref<TrackSettings[]>([])
@@ -352,6 +353,11 @@ const getMiddleName = (id: number) => {
   const user = users.value.find(user => user.id === id)
   return user ? user.middleName : "Nomalum"
 }
+
+const sortTimeTrack = computed(() => {
+  return timeTracks.value.sort((a, b) => b.id - a.id)
+})
+
 onMounted(() => {
   loadTrackSettings()
   loadUsers()
