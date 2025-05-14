@@ -110,6 +110,15 @@
             </option>
           </select>
         </div>
+        <div>
+          <label class="block text-gray-700 font-medium mb-1"> Sana</label>
+          <input
+              v-model="createTimeTrack.date"
+              type="date"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400"
+              required
+          >
+        </div>
       </div>
 
       <div class="flex gap-3">
@@ -153,7 +162,7 @@
             <td class="px-4 py-3">{{ getMiddleName(track.userId) }}</td>
             <td class="px-4 py-3">{{ track.startTime }}</td>
             <td class="px-4 py-3">{{ track.endTime }}</td>
-            <td class="px-4 py-3">{{ dayjs(track.createdAt).format('YYYY-MM-DD') }}</td>
+            <td class="px-4 py-3">{{ track.date }}</td>
             <td class="px-4 py-3 flex gap-2">
               <button @click="editTimeTrack(track)"
                       class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md">Edit
@@ -184,8 +193,6 @@ import type {
   User
 } from "../models/ProjectModels.ts";
 import {ApiService} from "../service/ApiService.ts";
-import dayjs from 'dayjs';
-
 const isEditing = ref(false);
 const trackSettings = ref<TrackSettings[]>([])
 
@@ -260,15 +267,18 @@ const deleteTrackSettings = async (id: number) => {
 }
 
 const createTimeTrack = ref<createTimeTrack>({
+  date: '',
   userId: 0,
   startTime: '',
   endTime: '',
   delayReason: '',
   endReason: ''
+
 })
 
 const updateTimeTrack = ref<updateTimeTrack>({
   delayReason: "",
+  date: '',
   endReason: "",
   endTime: "",
   startTime: "",
@@ -303,7 +313,7 @@ const submitTimeTrack = async () => {
     if (isEditing.value && updateTimeTrack.value.id) {
       await ApiService.updateTimeTrack(updateTimeTrack.value.id, updateTimeTrack.value)
     } else {
-      await ApiService.createTimeTrack(createTimeTrack.value)
+      await ApiService.createReasons(createTimeTrack.value)
     }
     await loadTimeTrack()
     resetTimeTrack()
@@ -328,11 +338,13 @@ const resetTimeTrack = () => {
   createTimeTrack.value = {
     userId: 0,
     delayReason: '',
+    date: '',
     endReason: ''
   }
   updateTimeTrack.value = {
     userId: 0,
     delayReason: '',
+    date: '',
     endReason: '',
     id: 0
   }

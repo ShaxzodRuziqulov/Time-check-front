@@ -64,7 +64,12 @@ export const ApiService = {
     async createTimeTrack(timeTrack: createTimeTrack) {
         const response = await axiosInstance.post(`/api/user/time-track/create`, timeTrack)
         return response.data
-    }, async updateTimeTrack(id: number, timeTrack: updateTimeTrack) {
+    },
+    async createReasons(timeTrack: createTimeTrack) {
+        const response = await axiosInstance.post(`/api/user/time-track/reason`, timeTrack)
+        return response.data
+    },
+    async updateTimeTrack(id: number, timeTrack: updateTimeTrack) {
         return await axiosInstance.put(`/api/user/time-track/update/${id}`, timeTrack)
     }, async completeTimeTrack(id: number) {
         return await axiosInstance.get(`/api/user/time-track/complete/${id}`)

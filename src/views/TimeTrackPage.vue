@@ -63,7 +63,7 @@
             <td class="px-4 py-3">{{ track.middleName }}</td>
             <td class="px-4 py-3">{{ track.startTime }}</td>
             <td class="px-4 py-3">{{ track.endTime }}</td>
-            <td class="px-4 py-3">{{ dayjs(track.createdAt).format('YYYY-MM-DD') }}</td>
+            <td class="px-4 py-3">{{ track.date }}</td>
 
           </tr>
           </tbody>
@@ -78,7 +78,6 @@ import {computed, onMounted, ref} from "vue";
 import {ApiService} from "../service/ApiService.ts";
 import type {TimeTrackUser,} from "../models/ProjectModels.ts";
 import router from "../router";
-import dayjs from 'dayjs';
 
 
 const timeTracks = ref<TimeTrackUser[]>([])
@@ -99,7 +98,7 @@ const startWork = async () => {
   isLoading.value = true;
 
   try {
-    const response = await ApiService.createTimeTrack({userId});
+    const response = await ApiService.createTimeTrack(userId);
 
     alert("Ish boshlandi!");
     console.log("Yuborildi:", response);
@@ -133,6 +132,7 @@ const loadTimeTrack = async () => {
   try {
     const response = await ApiService.getAllWithUserDetails();
     timeTracks.value = response.data;
+    console.log(response.data);
   } catch (error) {
     console.log(error);
   }
