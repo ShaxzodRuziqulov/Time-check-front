@@ -147,6 +147,7 @@
             <th class="px-4 py-3 text-left">Familiya</th>
             <th class="px-4 py-3 text-left">Ota ismi</th>
             <th class="px-4 py-3 text-left">Boshlagan vaqt</th>
+            <th class="px-4 py-3 text-left">Kechikgan vaqt</th>
             <th class="px-4 py-3 text-left">Tugatgan vaqt</th>
             <th class="px-4 py-3 text-left">Qachon</th>
             <th class="px-4 py-3 text-left">Amallar</th>
@@ -161,6 +162,7 @@
             <td class="px-4 py-3">{{ getLastName(track.userId) }}</td>
             <td class="px-4 py-3">{{ getMiddleName(track.userId) }}</td>
             <td class="px-4 py-3">{{ track.startTime }}</td>
+            <td class="px-4 py-3">{mavjud emas}</td>
             <td class="px-4 py-3">{{ track.endTime }}</td>
             <td class="px-4 py-3">{{ track.date }}</td>
             <td class="px-4 py-3 flex gap-2">

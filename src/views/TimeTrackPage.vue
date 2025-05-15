@@ -98,7 +98,7 @@ const startWork = async () => {
   isLoading.value = true;
 
   try {
-    const response = await ApiService.createTimeTrack(userId);
+    const response = await ApiService.createTimeTrack({userId});
 
     alert("Ish boshlandi!");
     console.log("Yuborildi:", response);
