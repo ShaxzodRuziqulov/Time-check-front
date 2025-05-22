@@ -8,8 +8,8 @@ import type {
     updateTimeTrack,
     updateTrackSettings,
     updateUsers
-} from "../models/ProjectModels.ts";
-import axiosInstance from "../axios.ts";
+} from "@/models/ProjectModels";
+import axiosInstance from "@/axios";
 
 export const ApiService = {
 
@@ -50,7 +50,10 @@ export const ApiService = {
         return await axiosInstance.put(`/api/admin/job/update/${id}`, job)
     }, async getAllJobs() {
         return await axiosInstance.get('/api/admin/job/all')
-    }, async deleteJob(id: number) {
+    }, async getFreeJobs() {
+        return await axiosInstance.get('/api/admin/job/free')
+    },
+    async deleteJob(id: number) {
         return await axiosInstance.delete(`/api/admin/job/delete/${id}`)
     }, async getPositions() {
         return await axiosInstance.get('/api/admin/job/positions')

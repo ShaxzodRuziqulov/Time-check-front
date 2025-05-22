@@ -1,7 +1,6 @@
 <template>
   <div class="p-6 bg-gray-100 min-h-screen">
     <h1 class="text-3xl font-bold mb-6 text-gray-800">Bosh sahifa</h1>
-
     <!-- Info Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <div class="bg-white p-4 rounded-xl shadow hover:shadow-md">
@@ -9,11 +8,11 @@
         <div class="text-2xl font-semibold text-blue-600">{{ userCount }}</div>
       </div>
       <div class="bg-white p-4 rounded-xl shadow hover:shadow-md">
-        <div class="text-gray-500">Departmentlar</div>
+        <div class="text-gray-500">Bo'limlar</div>
         <div class="text-2xl font-semibold text-green-600">{{ departmentCount }}</div>
       </div>
       <div class="bg-white p-4 rounded-xl shadow hover:shadow-md">
-        <div class="text-gray-500">Job lavozimlari</div>
+        <div class="text-gray-500">Lavozimlar </div>
         <div class="text-2xl font-semibold text-purple-600">{{ jobCount }}</div>
       </div>
     </div>
@@ -22,7 +21,7 @@
     <div class="bg-white p-4 rounded-xl shadow mb-6">
       <h2 class="text-xl font-semibold mb-4">Filterlar</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <select class="p-2 border rounded w-full" v-model="selectedDepartmentId">
+        <select class="p-2 border rounded w-full" v-model.number="selectedDepartmentId">
           <option disabled value="">Bo'limni tanlang</option>
           <option v-for="department in departments" :key="department.id" :value="department.id">
             {{ department.name }}
@@ -31,11 +30,10 @@
 
         <select class="p-2 border rounded w-full" v-model="selectedJobId">
           <option disabled value="">Lavozimni tanlang</option>
-          <option v-for="job in jobs" :key="job.id" :value="job.id">
+          <option v-for="job in filteredJobs" :key="job.id" :value="job.id">
             {{ job.positionStatus }} ({{ getDepartmentName(job.departmentId) }})
           </option>
         </select>
-
       </div>
     </div>
 
@@ -46,10 +44,8 @@
         <thead>
         <tr class="bg-gray-200">
           <th class="px-4 py-2 text-left">#</th>
-          <th class="px-6 py-4 text-left">Ismi</th>
-          <th class="px-6 py-4 text-left">Familiyasi</th>
-          <th class="px-6 py-4 text-left">Ota ismi</th>
-          <th class="px-6 py-4 text-left">Username</th>
+          <th class="px-6 py-4 text-left">F.I.O</th>
+          <th class="px-6 py-4 text-left">Foydalanuvchi nomi</th>
           <th class="px-6 py-4 text-left">Holat</th>
           <th class="px-6 py-4 text-left">Tug'ilgan kun</th>
           <th class="px-6 py-4 text-left">Ish</th>
@@ -58,9 +54,7 @@
         <tbody>
         <tr v-for="(user, index) in filteredUsers" :key="user.id" class="border-t">
           <td class="px-4 py-2">{{ index + 1 }}</td>
-          <td class="px-6 py-4">{{ user.firstName }}</td>
-          <td class="px-6 py-4">{{ user.lastName }}</td>
-          <td class="px-6 py-4">{{ user.middleName }}</td>
+          <td class="px-6 py-4">{{ fullName(user) }}</td>
           <td class="px-6 py-4">{{ user.username }}</td>
           <td class="px-6 py-4">{{ user.userStatus }}</td>
           <td class="px-6 py-4">{{ user.birthDate }}</td>
@@ -74,8 +68,8 @@
 
 <script setup lang="ts">
 import {computed, onMounted, ref} from 'vue'
-import {ApiService} from "../service/ApiService.ts";
-import type {Department, Job, User} from "../models/ProjectModels.ts";
+import {ApiService} from "@/service/ApiService";
+import type {Department, Job, User} from "@/models/ProjectModels";
 
 const jobCount = ref(0)
 const userCount = ref(0)
@@ -84,13 +78,15 @@ const departments = ref<Department[]>([])
 const jobs = ref<Job[]>([])
 const users = ref<User[]>([])
 const user = ref<User>();
-const selectedDepartmentId = ref<number | null>(null);
-const selectedJobId = ref<number | null>(null);
+const selectedDepartmentId = ref<number | ''>('');
+const selectedJobId = ref<number | ''>('');
 
 const positionStatuses = ref<{
   name: string;
   label: string;
 }[]>([]);
+
+const fullName = (user: User) => `${user.firstName} ${user.lastName} ${user.middleName}`;
 
 const loadStats = async () => {
   try {
@@ -180,6 +176,22 @@ const filteredUsers = computed(() => {
         : true;
 
     return matchDepartment && matchJob;
+  });
+});
+
+const filteredJobs = computed(() => {
+  let filtered = jobs.value;
+
+  if (selectedDepartmentId.value) {
+    filtered = filtered.filter(job => job.departmentId === selectedDepartmentId.value);
+  }
+
+  const seen = new Set();
+  return filtered.filter(job => {
+    const key = job.positionStatus;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
   });
 });
 

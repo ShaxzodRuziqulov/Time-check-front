@@ -5,9 +5,9 @@
       <button
           type="button"
           @click="logout"
-          class="bg-black hover:bg-white hover:text-black transition-colors duration-300 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-black disabled:opacity-50 disabled:cursor-not-allowed float-right"
+          class="bg-black hover:bg-white cursor-pointer hover:text-black transition-colors duration-300 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-black disabled:opacity-50 disabled:cursor-not-allowed float-right"
       >
-        Log out
+        Tizimdan chiqish
       </button>
 
       <h2 class="text-3xl font-semibold text-gray-800 mb-6 border-b pb-2">Ish vaqtini boshqarish</h2>
@@ -18,17 +18,17 @@
           <div class="flex space-x-4">
             <button
                 type="submit"
-                :disabled="isLoading"
-                class="bg-green-600 hover:bg-green-700 transition-colors duration-300 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                :disabled="isDisabled"
+                class="bg-green-600 hover:bg-green-700 disabled:hover:bg-green-700 cursor-pointer transition-colors duration-300 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {{ isLoading ? "Yuklanmoqda..." : "Boshlash" }}
             </button>
 
             <button
                 type="button"
-                :disabled="isLoading"
+                :disabled="!isDisabled"
                 @click="completeWork"
-                class="bg-red-500 hover:bg-red-600 transition-colors duration-300 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                class="bg-red-500 hover:bg-red-600 disabled:hover:bg-red-500 cursor-pointer transition-colors duration-300 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Yakunlash
             </button>
@@ -36,7 +36,6 @@
 
         </div>
       </form>
-
       <div v-if="timeTracks.length" class="mt-6 overflow-x-auto">
         <h3 class="text-xl font-semibold text-gray-800 mb-3">Ishni boshlaganlar ro'yxati</h3>
         <table class="w-full text-sm bg-white border border-gray-200 rounded-xl overflow-hidden">
@@ -75,8 +74,8 @@
 
 <script setup lang="ts">
 import {computed, onMounted, ref} from "vue";
-import {ApiService} from "../service/ApiService.ts";
-import type {TimeTrackUser,} from "../models/ProjectModels.ts";
+import {ApiService} from "@/service/ApiService";
+import type {TimeTrackUser,} from "@/models/ProjectModels";
 import router from "../router";
 
 
@@ -98,10 +97,9 @@ const startWork = async () => {
   isLoading.value = true;
 
   try {
-    const response = await ApiService.createTimeTrack({userId});
+    await ApiService.createTimeTrack({userId});
 
     alert("Ish boshlandi!");
-    console.log("Yuborildi:", response);
     await loadTimeTrack()
   } catch (error: any) {
     alert(error?.response?.data?.message || "Xatolik yuz berdi");
@@ -116,10 +114,9 @@ const completeWork = async () => {
   isLoading.value = true;
 
   try {
-    const response = await ApiService.completeTimeTrack(userId);
+    await ApiService.completeTimeTrack(userId);
     alert("Ish vaqti yakunlandi!");
     await loadTimeTrack()
-    console.log("Yakunlandi:", response);
   } catch (error: any) {
     alert(error?.response?.data?.message || "Xatolik yuz berdi");
     console.error(error);
@@ -132,7 +129,6 @@ const loadTimeTrack = async () => {
   try {
     const response = await ApiService.getAllWithUserDetails();
     timeTracks.value = response.data;
-    console.log(response.data);
   } catch (error) {
     console.log(error);
   }
@@ -149,6 +145,12 @@ const logout = () => {
   localStorage.removeItem("role");
   router.push("/login");
 };
+
+const today = new Date().toISOString().split('T')[0];
+
+const isDisabled = computed(() => {
+  return filteredTimeTracks.value[0]?.date === today && !!filteredTimeTracks.value[0]?.startTime;
+})
 
 onMounted(() => {
   loadTimeTrack()

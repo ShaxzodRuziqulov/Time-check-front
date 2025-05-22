@@ -42,10 +42,13 @@
 
 
 <script setup lang="ts">
-import type {LoginUser} from "../models/ProjectModels.ts";
+import type {LoginUser} from "@/models/ProjectModels";
 import {ref} from "vue";
 import {useRouter} from "vue-router";
-import {AuthService} from "../service/AuthService.ts";
+import {AuthService} from "@/service/AuthService";
+import {useCustomToast} from "@/composables/useCustomToast";
+
+const { showToast } = useCustomToast();
 
 const form = ref<LoginUser>({
   username: '',
@@ -56,15 +59,15 @@ const router = useRouter();
 const handleSubmit = async () => {
   try {
     const response = await AuthService.login(form.value);
-
+    console.log('response', response)
     localStorage.setItem('token', response.token);
     localStorage.setItem('userId', response.userId);
     localStorage.setItem('role', response.role);
 
     await router.push({name: 'DashboardView'});
-    console.log(response);
+    showToast("Tizimga mufaqqiyatli kirdiz", "success");
   } catch (err) {
-    alert('Tizimga kirishda xatolik: Login yoki parolda hatolik bor');
+    showToast("Tizimga kirishda xatolik: Login yoki parolda hatolik bor", "warning");
   }
 };
 </script>

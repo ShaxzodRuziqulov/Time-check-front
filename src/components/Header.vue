@@ -4,43 +4,47 @@
     <a href="/" class="text-2xl font-semibold whitespace-nowrap">EPG</a>
     <div class="flex items-center space-x-4">
       <router-link
-          to="/"
+          active-class="bg-gray-700"
+          to="/dashboard"
           class="py-2 px-3 rounded-sm hover:bg-gray-700 transition duration-200"
       >Home
       </router-link>
       <router-link
+          active-class="bg-gray-700"
           to="/department"
           class="py-2 px-3 rounded-sm hover:bg-gray-700 transition duration-200"
-      >Department
+      >Bo'lim
       </router-link>
       <router-link
+          active-class="bg-gray-700"
           to="/job"
           class="py-2 px-3 rounded-sm hover:bg-gray-700 transition duration-200"
-      >Job
+      >Ish
       </router-link>
       <router-link
+          active-class="bg-gray-700"
           to="/user"
           class="py-2 px-3 rounded-sm hover:bg-gray-700 transition duration-200"
       >Foydalanuvchilar
       </router-link>
 
       <router-link
+          active-class="bg-gray-700"
           to="/admin/time-track"
           class="py-2 px-3 rounded-sm hover:bg-gray-700 transition duration-200"
       >Ish vaqti statistikasi
       </router-link>
-      <router-link
-          @click="logout"
-          to="/login"
-          class="py-2 px-3 rounded-sm hover:bg-gray-700 transition duration-200"
-      >Logout
-      </router-link>
-
     </div>
+    <router-link
+        @click="logout"
+        to="/login"
+        class="py-2 px-3 rounded-sm hover:bg-gray-700 transition duration-200"
+    >Tizimdan chiqish
+    </router-link>
   </div>
 </template>
 <script setup lang="ts">
-import router from "../router";
+import router from "@/router";
 
 const logout = () => {
   localStorage.removeItem("token");

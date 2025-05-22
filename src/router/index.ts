@@ -1,27 +1,18 @@
 import type {RouteRecordRaw} from "vue-router";
 import {createRouter, createWebHistory} from "vue-router";
-import HomeView from "../views/HomeView.vue";
-import MainLayout from "../layouts/Layout.vue";
-import LoginView from "../views/LoginView.vue";
-import NotFound from "../components/NotFound.vue";
-import DepartmentView from "../views/DepartmentView.vue";
-import JobView from "../views/JobView.vue";
-import UsersView from "../views/UsersView.vue";
-import TimeTrackPage from "../views/TimeTrackPage.vue";
-import TimeTrackAdmin from "../views/TimeTrackAdmin.vue";
 
 const routes: Array<RouteRecordRaw> = [
     {
         path: '/',
         name: "Main",
         redirect: '/dashboard',
-        component: MainLayout,
+        component: () => import("@/layouts/Layout.vue"),
         meta: {requiresAuth: true},
         children: [
             {
                 path: "/dashboard",
                 name: "DashboardView",
-                component: HomeView,
+                component: () => import("@/views/HomeView.vue"),
                 meta: {
                     requiresAuth: true,
                 },
@@ -29,43 +20,43 @@ const routes: Array<RouteRecordRaw> = [
             {
                 path: "/department",
                 name: "DepartmentView",
-                component: DepartmentView,
+                component: () => import("@/views/DepartmentView.vue"),
                 meta: {
                     requiresAuth: true,
                 },
             }, {
                 path: "/job",
                 name: "JobView",
-                component: JobView,
+                component: () => import("@/views/JobView.vue"),
                 meta: {requiresAuth: true},
             }, {
                 path: "/user",
                 name: "UsersView",
-                component: UsersView,
+                component: () => import("@/views/UsersView.vue"),
                 meta: {requiresAuth: true},
             },
             {
                 path: "/admin/time-track",
                 name: "AdminTimeTrackPage",
-                component: TimeTrackAdmin,
+                component: () => import("@/views/TimeTrackAdmin.vue"),
                 meta: {requiresAuth: true},
             },
         ]
     }, {
         path: '/time-track',
         name: 'TimeTrackPage',
-        component: TimeTrackPage,
+        component: () => import("@/views/TimeTrackPage.vue"),
         meta: {requiresAuth: true},
     },
     {
         path: "/login",
         name: 'Login',
-        component: LoginView,
+        component: () => import("@/views/LoginView.vue"),
     },
     {
         path: '/:pathMatch(.*)*',
         name: 'NotFound',
-        component: NotFound,
+        component: () => import("@/components/NotFound.vue"),
         meta: {requiresAuth: true}
     }
 
@@ -84,7 +75,6 @@ router.beforeEach((to, _, next) => {
     if (!token && to.meta.requiresAuth) {
         return next({name: 'Login'});
     }
-
     if (token && to.name === 'Login') {
         if (role === 'ROLE_ADMIN') return next({path: '/dashboard'});
         if (role === 'ROLE_USER') return next({path: '/time-track'});
