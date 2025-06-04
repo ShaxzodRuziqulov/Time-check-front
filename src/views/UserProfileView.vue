@@ -12,7 +12,6 @@
             placeholder="Ismingizni kiriting"
         />
       </div>
-
       <div>
         <label class="block text-sm font-medium">Familiya</label>
         <input
