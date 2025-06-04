@@ -1,0 +1,14 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - shared-network
+    ports:
+      - "83:80"
+    restart: on-failure:10
+
+networks:
+  shared-network:
+    external: true

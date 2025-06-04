@@ -1,0 +1,41 @@
+stages:
+  - build
+  - deploy
+
+build_job:
+  stage: build
+  only:
+    - local-developer
+  tags:
+    - office-management-frontend
+  script:
+    - pwd
+    - whoami
+    - git config --global pull.rebase false
+    #    - git config --global user.name "cibot"
+    #    - git config --global user.email "cibot@uzinfocom.uz"
+    - git checkout local-developer
+    - git pull --no-rebase
+    #    - git pull --rebase
+    - echo "Application successfully build."
+
+  after_script:
+    - cd notification
+    - bash notification.sh
+
+deploy_job:
+  stage: deploy
+  only:
+    - local-developer
+  tags:
+    - office-management-frontend
+  script:
+    - docker compose down -v || true
+    - docker compose up -d --build
+#    - npm ci
+#    - npm run build
+#    - rm -rf /var/www/frontend/*
+#    - cp -r dist/* /var/www/frontend/
+  after_script:
+    - cd notification
+    - bash notification.sh
