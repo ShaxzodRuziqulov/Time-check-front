@@ -92,29 +92,21 @@
         @close="showDeleteConfirm = false"
         bodyClass="rounded-lg !bg-bg-primary text-center px-4 py-6"
     >
-      <p class="text-lg font-semibold mb-4">Ushbu bo'limni o'chirmoqchimisiz?</p>
-      <div class="flex justify-center gap-4">
-        <button
-            @click="handleDeleteConfirmed"
-            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-medium">
-          Ha, o‘chirish
-        </button>
-        <button
-            @click="showDeleteConfirm = false"
-            class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md font-medium"
-        >
-          Bekor qilish
-        </button>
-      </div>
+      <DeleteConfirm
+          v-model:show="showDeleteConfirm"
+          title="Ushbu bo'limni o'chirmoqchimisiz?"
+          @confirm="handleDeleteConfirmed"
+      />
     </CDialog>
   </div>
 </template>
 <script setup lang="ts">
 import {onMounted, ref} from "vue";
-import type {Department,updateDepartment} from "@/models/ProjectModels";
+import type {Department, updateDepartment} from "@/models/ProjectModels";
 import {ApiService} from "@/service/ApiService";
 import {useCustomToast} from "@/composables/useCustomToast";
 import CDialog from "@/components/CDialog.vue";
+import DeleteConfirm from "@/components/DeleteConfirm.vue";
 
 const form = ref<updateDepartment>({
   name: '',

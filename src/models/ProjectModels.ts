@@ -25,14 +25,15 @@ export interface Department {
 
 
 export interface createUser {
+    id?: number
     username: string
-    password: string
+    password?: string
     firstName: string
     lastName: string
     middleName: string
     birthDate: string
     userStatus: string
-    jobId: number
+    jobId: number | string
     roles: Role[]
 }
 
@@ -47,12 +48,13 @@ export interface Job {
     positionStatus: string
     jobStatus: string
     departmentId: number
+    department: Department
 }
 
 export interface createJob {
     positionStatus: string
     jobStatus: string
-    departmentId: number
+    departmentId: number | string
 }
 
 export interface updateJob extends createJob {
@@ -91,6 +93,7 @@ export interface TimeTrack {
     delayReason: string
     endReason: string
     date: string
+    user: UserData
 }
 export interface TimeTrackUser {
     id: number
@@ -104,19 +107,44 @@ export interface TimeTrackUser {
     endReason: string
     date: string
 }
+
+export interface Authority {
+    authority: string
+}
+
+export interface UserData {
+    createdAt: string
+    updatedAt: string
+    id: number | undefined
+    firstName: string
+    lastName: string
+    middleName: string
+    birthDate: string
+    username: string | null
+    password: string
+    roles: Role[]
+    job: Job
+    userStatus: string
+    enabled: boolean
+    authorities: Authority[]
+    accountNonExpired: boolean
+    accountNonLocked: boolean
+    credentialsNonExpired: boolean
+}
 export interface createTimeTrack {
     startTime?: string
     endTime?: string
-    userId: number
+    userId?: number | string | undefined
     delayReason?: string
     endReason?: string
     date?: string
+    user?: UserData
 }
 
 export interface updateTimeTrack extends createTimeTrack {
     id?: number
+    userId?: number | string
 }
-
 
 export interface TrackSettings {
     id: number

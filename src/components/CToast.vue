@@ -1,7 +1,7 @@
 <template>
   <div
-      :class="typeStatus"
-      class="relative p-4 rounded-md flex items-center justify-between max-w-[343px]"
+    :class="typeStatus"
+    class="relative p-4 rounded-md flex items-center justify-between max-w-[343px]"
   >
     <div class="flex items-center justify-between">
       <img class="w-6 h-6" :src="images[type]" alt="icon" />

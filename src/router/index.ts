@@ -41,12 +41,19 @@ const routes: Array<RouteRecordRaw> = [
                 component: () => import("@/views/TimeTrackAdmin.vue"),
                 meta: {requiresAuth: true},
             },
-        ]
-    }, {
-        path: '/time-track',
-        name: 'TimeTrackPage',
-        component: () => import("@/views/TimeTrackPage.vue"),
-        meta: {requiresAuth: true},
+            {
+                path: "/time-track/user/profile",
+                name: "UserProfile",
+                component: () => import("@/views/UserProfileView.vue"),
+                meta: {requiresAuth: true},
+            },
+            {
+                path: '/time-track',
+                name: 'TimeTrackPage',
+                component: () => import("@/views/TimeTrackPage.vue"),
+                meta: {requiresAuth: true},
+            },
+        ],
     },
     {
         path: "/login",
@@ -59,30 +66,50 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import("@/components/NotFound.vue"),
         meta: {requiresAuth: true}
     }
-
 ];
-
-
 const router = createRouter({
     history: createWebHistory(),
     routes
 })
 
+// Role-based access control configuration
+const roleBasedRoutes = {
+    'ROLE_ADMIN': '/dashboard',
+    'ROLE_USER': '/time-track'
+};
+
 router.beforeEach((to, _, next) => {
     const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
+    const roles: string[] = localStorage.getItem("roles")?.split(",").filter(Boolean) || [];
+    const isAuthenticated = !!token;
+    const isLoginPage = to.name === 'Login';
 
-    if (!token && to.meta.requiresAuth) {
-        return next({name: 'Login'});
-    }
-    if (token && to.name === 'Login') {
-        if (role === 'ROLE_ADMIN') return next({path: '/dashboard'});
-        if (role === 'ROLE_USER') return next({path: '/time-track'});
+    // If route requires auth and user is not authenticated, redirect to login
+    if (to.meta.requiresAuth && !isAuthenticated) {
+        return next({ name: 'Login' });
     }
 
-    if (token && role === 'ROLE_USER') {
-        if (to.path !== '/time-track') {
-            return next({path: '/time-track'});
+    // If user is authenticated and tries to access login page, redirect based on role
+    if (isAuthenticated && isLoginPage) {
+        // Check for admin first, then user
+        if (roles.includes('ROLE_ADMIN')) {
+            return next(roleBasedRoutes['ROLE_ADMIN']);
+        }
+        if (roles.includes('ROLE_USER')) {
+            return next(roleBasedRoutes['ROLE_USER']);
+        }
+    }
+
+    // If user is authenticated but tries to access admin routes without admin role
+    if (isAuthenticated && to.path.startsWith('/admin/') && !roles.includes('ROLE_ADMIN')) {
+        return next(roles.includes('ROLE_USER') ? roleBasedRoutes['ROLE_USER'] : '/');
+    }
+
+    // If user is a regular user, restrict access to non-allowed routes
+    if (isAuthenticated && roles.includes('ROLE_USER') && !roles.includes('ROLE_ADMIN')) {
+        const allowedPaths = ['/time-track', '/time-track/user/profile'];
+        if (!allowedPaths.some(path => to.path.startsWith(path))) {
+            return next(roleBasedRoutes['ROLE_USER']);
         }
     }
 

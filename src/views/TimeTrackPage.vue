@@ -1,14 +1,12 @@
 <template>
-  <div class="flex items-center justify-center min-h-screen">
-    <div class="p-10 w-full max-w-7xl mx-auto bg-white rounded-3xl shadow-2xl">
+  <div class="flex flex-col items-center justify-center min-h-screen">
+    <div class="max-w-7xl w-full mx-auto">
+      <div class="bg-white ml-auto px-4 py-2 rounded-xl gap-4 flex items-center justify-end">
+          <DropDown @logout="logout" @profile="profile" :userName="userName" />
+      </div>
+    </div>
 
-      <button
-          type="button"
-          @click="logout"
-          class="bg-black hover:bg-white cursor-pointer hover:text-black transition-colors duration-300 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-black disabled:opacity-50 disabled:cursor-not-allowed float-right"
-      >
-        Tizimdan chiqish
-      </button>
+    <div class="p-8 w-full max-w-7xl mx-auto bg-white rounded-3xl shadow-2xl">
 
       <h2 class="text-3xl font-semibold text-gray-800 mb-6 border-b pb-2">Ish vaqtini boshqarish</h2>
 
@@ -19,14 +17,13 @@
             <button
                 type="submit"
                 :disabled="isDisabled"
-                class="bg-green-600 hover:bg-green-700 disabled:hover:bg-green-700 cursor-pointer transition-colors duration-300 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                class="bg-green-600 hover:bg-green-700 disabled:hover:bg-green-600 cursor-pointer transition-colors duration-300 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {{ isLoading ? "Yuklanmoqda..." : "Boshlash" }}
             </button>
-
             <button
                 type="button"
-                :disabled="!isDisabled"
+                :disabled="!isDisabled || !!filteredTimeTracks[0]?.endTime"
                 @click="completeWork"
                 class="bg-red-500 hover:bg-red-600 disabled:hover:bg-red-500 cursor-pointer transition-colors duration-300 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -38,32 +35,27 @@
       </form>
       <div v-if="timeTracks.length" class="mt-6 overflow-x-auto">
         <h3 class="text-xl font-semibold text-gray-800 mb-3">Ishni boshlaganlar ro'yxati</h3>
-        <table class="w-full text-sm bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <thead class="bg-gray-100 text-gray-700 font-medium text-xs uppercase">
-          <tr>
-            <th class="px-4 py-3 text-left">#</th>
-            <th class="px-4 py-3 text-left">Kechikish sababi</th>
+        <table class="w-full table-fixed text-sm bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <thead class="bg-gray-100 w-full text-gray-700 font-medium text-xs uppercase">
+          <tr class="w-full">
+            <th class="px-4 py-3 text-left w-5">#</th>
+            <th class="px-4 py-3 text-left w-[300px] max-w-[300px]">Kechikish sababi</th>
             <th class="px-4 py-3 text-left">Tugatish sababi</th>
-            <th class="px-4 py-3 text-left">Ism</th>
-            <th class="px-4 py-3 text-left">Familiya</th>
-            <th class="px-4 py-3 text-left">Ota ismi</th>
+            <th class="px-4 py-3 text-left">F.I.O</th>
             <th class="px-4 py-3 text-left">Boshlagan vaqt</th>
             <th class="px-4 py-3 text-left">Tugatgan vaqt</th>
             <th class="px-4 py-3 text-left">Qachon</th>
           </tr>
           </thead>
-          <tbody>
-          <tr v-for="(track,index) in filteredTimeTracks" :key="track.id" class="hover:bg-gray-50 border-t">
-            <td class="px-4 py-3">{{ index + 1 }}</td>
-            <td class="px-4 py-3">{{ track.delayReason }}</td>
+          <tbody class="w-full">
+          <tr v-for="(track,index) in filteredTimeTracks" :key="track.id" class="hover:bg-gray-50 w-full border-t">
+            <td class="px-4 py-3 w-5">{{ index + 1 }}</td>
+            <td class="px-4 py-3 w-[300px] max-w-[300px] whitespace-normal">{{ track.delayReason }}</td>
             <td class="px-4 py-3">{{ track.endReason }}</td>
-            <td class="px-4 py-3">{{ track.firstName }}</td>
-            <td class="px-4 py-3">{{ track.lastName }}</td>
-            <td class="px-4 py-3">{{ track.middleName }}</td>
-            <td class="px-4 py-3">{{ track.startTime }}</td>
-            <td class="px-4 py-3">{{ track.endTime }}</td>
+            <td class="px-4 py-3">{{ fullName(track) }}</td>
+            <td class="px-4 py-3">{{ formatTimeOnly(track.startTime) }}</td>
+            <td class="px-4 py-3">{{ formatTimeOnly(track.endTime) }}</td>
             <td class="px-4 py-3">{{ track.date }}</td>
-
           </tr>
           </tbody>
         </table>
@@ -77,11 +69,19 @@ import {computed, onMounted, ref} from "vue";
 import {ApiService} from "@/service/ApiService";
 import type {TimeTrackUser,} from "@/models/ProjectModels";
 import router from "../router";
+import DropDown from "@/components/DropDown.vue";
+import {useUsersStore} from "@/stores/usersStore";
 
 
 const timeTracks = ref<TimeTrackUser[]>([])
 const userId = Number(localStorage.getItem("userId"));
 const isLoading = ref(false);
+const userName = ref("Foydalanuvchi");
+const usersStore = useUsersStore();
+
+
+
+const fullName = (track: TimeTrackUser) => `${track.firstName} ${track.lastName}  ${track.middleName}`
 
 const startWork = async () => {
   if (isLoading.value) return;
@@ -114,7 +114,7 @@ const completeWork = async () => {
   isLoading.value = true;
 
   try {
-    await ApiService.completeTimeTrack(userId);
+    await ApiService.completeTimeTrack();
     alert("Ish vaqti yakunlandi!");
     await loadTimeTrack()
   } catch (error: any) {
@@ -129,20 +129,34 @@ const loadTimeTrack = async () => {
   try {
     const response = await ApiService.getAllWithUserDetails();
     timeTracks.value = response.data;
+    usersStore.state.users = response.data;
+    console.log(response.data);
+    localStorage.setItem("users", JSON.stringify(response.data));
+    console.log(usersStore.state.users)
+    console.log(timeTracks.value)
   } catch (error) {
     console.log(error);
   }
 }
 
 const filteredTimeTracks = computed(() => {
-  timeTracks.value.sort((a, b) => b.id - a.id)
-  return timeTracks.value.filter(track => track.userId === userId);
+  const today = new Date().toISOString().split('T')[0];
+
+  return timeTracks.value
+      .filter(track => track.userId === userId && track.date === today)
+      .sort((a, b) => b.id - a.id)
+      .slice(0, 1);
 });
+
+const profile = () => {
+  router.push('/time-track/user/profile')
+}
 
 const logout = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("userId");
   localStorage.removeItem("role");
+  localStorage.removeItem("user");
   router.push("/login");
 };
 
@@ -152,8 +166,22 @@ const isDisabled = computed(() => {
   return filteredTimeTracks.value[0]?.date === today && !!filteredTimeTracks.value[0]?.startTime;
 })
 
-onMounted(() => {
-  loadTimeTrack()
-})
+function formatTimeOnly(time?: string): string {
+  if (!time) return "";
+  return time.split(':').slice(0, 2).join(':');
 
+}
+
+onMounted(() => {
+  const userStr = localStorage.getItem("user");
+  if (userStr) {
+    try {
+      const user = JSON.parse(userStr);
+      userName.value = `${user.firstName} ${user.lastName}`;
+    } catch (error) {
+      console.error("Foydalanuvchini o'qishda xatolik:", error);
+    }
+  }
+  loadTimeTrack();
+});
 </script>

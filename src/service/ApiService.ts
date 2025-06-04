@@ -50,8 +50,12 @@ export const ApiService = {
         return await axiosInstance.put(`/api/admin/job/update/${id}`, job)
     }, async getAllJobs() {
         return await axiosInstance.get('/api/admin/job/all')
-    }, async getFreeJobs() {
+    },
+    async getFreeJobs() {
         return await axiosInstance.get('/api/admin/job/free')
+    },
+    async getFreeJobsIncludingUser(id: number) {
+        return await axiosInstance.get(`/api/admin/job/free/${id}`)
     },
     async deleteJob(id: number) {
         return await axiosInstance.delete(`/api/admin/job/delete/${id}`)
@@ -74,8 +78,8 @@ export const ApiService = {
     },
     async updateTimeTrack(id: number, timeTrack: updateTimeTrack) {
         return await axiosInstance.put(`/api/user/time-track/update/${id}`, timeTrack)
-    }, async completeTimeTrack(id: number) {
-        return await axiosInstance.get(`/api/user/time-track/complete/${id}`)
+    }, async completeTimeTrack() {
+        return await axiosInstance.get(`/api/user/time-track/complete`)
     }, async findAllTimeTracks() {
         return await axiosInstance.get('/api/user/time-track/all')
     }, async findById(id: number) {
@@ -87,8 +91,17 @@ export const ApiService = {
     }, async checkIfUserCanLeave(id: number) {
         return await axiosInstance.put(`/api/user/time-track/check/${id}`)
     },
-
-
+    async pagination(
+        page = 0,
+        size = 10,
+        filter: {
+            departmentId?: number;
+            fromDate?: string;
+            toDate?: string;
+        }
+    ) {
+        return await axiosInstance.post(`/api/user/time-track/filter?page=${page}&size=${size}`, filter);
+    },
     async createTrackSettings(track: createTrackSettings) {
         const response = await axiosInstance.post(`/api/admin/track-settings/create`, track)
         return response.data

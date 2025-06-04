@@ -1,57 +1,28 @@
 <template>
   <div class="p-6  ">
+    <CButton
+        @click="showFrom = true"
+        class="max-w-[192px] mx-auto cursor-pointer flex items-center justify-center"
+        text="Yangi ish qo‘shish"
+        variant="primary"
+    />
+    <CDialog
+        has-close-icon
+        no-header
+        :show="showFrom"
+        @close="closeDialog"
+        bodyClass="rounded-lg !bg-bg-primary"
+    >
+      <AddJobForm
+          v-model="form"
+          :is-editing="isEditing"
+          :departments="departments"
+          :position-statuses="positionStatuses"
+          @submit="handleSubmit"
+          @reset="isResetMessage"
+      />
+    </CDialog>
 
-    <div class="bg-white shadow-xl rounded-2xl p-6 transition-all duration-300 border border-gray-100 max-w-xl mx-auto">
-      <form @submit.prevent="handleSubmit">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800">
-          {{ isEditing ? "Ishni tahrirlash" : "Yangi ish yaratish" }}
-        </h2>
-
-        <label class="block text-gray-700 font-medium mb-1">Lavozim tanlang</label>
-        <select
-            v-model="form.positionStatus"
-            class="border border-gray-300 focus:ring-2 focus:ring-green-400 focus:outline-none rounded-lg p-3 w-full mb-4"
-            required>
-          <option value="" disabled>Lavozim tanlang</option>
-          <option v-for="status in positionStatuses" :key="status.name" :value="status.name">
-            {{ status.label }}
-          </option>
-        </select>
-
-        <label class="block text-gray-700 font-medium mb-1">Holat</label>
-        <select v-model="form.jobStatus"
-                required
-                class="border border-gray-300 focus:ring-2 focus:ring-green-400 focus:outline-none rounded-lg p-3 w-full mb-4">
-          <option value="" disabled>Holat tanlang</option>
-          <option value="ACTIVE">Active</option>
-          <option value="INACTIVE">Inactive</option>
-        </select>
-
-        <label class="block text-gray-700 font-medium mb-1">Bo‘lim </label>
-        <select
-            v-model="form.departmentId"
-            class="border border-gray-300 focus:ring-2 focus:ring-green-400 focus:outline-none rounded-lg p-3 w-full mb-4"
-            required>
-          <option disabled value="">Bo‘limni tanlang</option>
-          <option v-for="dep in departments" :key="dep.id" :value="dep.id">
-            {{ dep.name }}
-          </option>
-        </select>
-
-        <div class="flex gap-2">
-          <button
-              class="bg-green-600 hover:bg-green-700 transition-colors duration-200 text-white px-5 py-2.5 rounded-lg font-semibold shadow cursor-pointer">
-            {{ isEditing ? "Yangilash" : "Saqlash" }}
-          </button>
-          <button
-              type="button"
-              @click="resetForm"
-              class="bg-gray-400 hover:bg-gray-500 transition-colors duration-200 text-white px-5 py-2.5 rounded-lg font-semibold shadow cursor-pointer">
-            Bekor qilish
-          </button>
-        </div>
-      </form>
-    </div>
 
     <div v-if="jobs.length" class="relative overflow-x-auto mt-8">
       <h2 class="text-2xl font-semibold mb-4 text-gray-800">Ishlar ro'yxati</h2>
@@ -93,21 +64,13 @@
         @close="showDeleteConfirm = false"
         bodyClass="rounded-lg !bg-bg-primary text-center px-4 py-6"
     >
-      <p class="text-lg font-semibold mb-4">Ushbu ish o'nini o'chirmoqchimisiz?</p>
-      <div class="flex justify-center gap-4">
-        <button
-            @click="handleDeleteConfirmed"
-            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-medium">
-          Ha, o‘chirish
-        </button>
-        <button
-            @click="showDeleteConfirm = false"
-            class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md font-medium"
-        >
-          Bekor qilish
-        </button>
-      </div>
+      <DeleteConfirm
+          v-model:show="showDeleteConfirm"
+          title="Ushbu ish o'rnini o'chirmoqchimisiz?"
+          @confirm="handleDeleteConfirmed"
+      />
     </CDialog>
+
   </div>
 </template>
 
@@ -117,12 +80,18 @@ import type {createJob, Department, Job, updateJob} from "@/models/ProjectModels
 import {ApiService} from "@/service/ApiService";
 import {useCustomToast} from "@/composables/useCustomToast";
 import CDialog from "@/components/CDialog.vue";
+import CButton from "@/components/CButton.vue";
+import AddJobForm from "@/components/AddJobForm.vue";
+import DeleteConfirm from "@/components/DeleteConfirm.vue";
 
 const departments = ref<Department[]>([]);
 const jobs = ref<Job[]>([]);
 const isEditing = ref(false);
 const {showToast} = useCustomToast();
-
+const showFrom = ref(false);
+const closeDialog = () => {
+  resetForm()
+}
 const sortJobs = computed(() => {
   return jobs.value.sort((a, b) => a.id - b.id)
 })
@@ -142,7 +111,13 @@ const update = ref<updateJob>({
   jobStatus: "",
   positionStatus: ""
 });
-
+const isResetMessage = () => {
+  form.value = {
+    departmentId: "",
+    jobStatus: "",
+    positionStatus: ""
+  }
+}
 const resetForm = () => {
   form.value = {
     departmentId: 0,
@@ -156,6 +131,7 @@ const resetForm = () => {
     positionStatus: ""
   };
   isEditing.value = false;
+  showFrom.value = false;
 };
 
 const getDepartmentName = (id: number) => {
@@ -172,6 +148,7 @@ const handleSubmit = async () => {
       await ApiService.createJob(form.value);
       showToast("Muvaffaqiyatli yaratildi", "success")
     }
+    showFrom.value = false;
     await loadJobs();
     resetForm();
   } catch (err) {
@@ -209,6 +186,7 @@ const loadDepartments = async () => {
 const editMessage = (job: updateJob) => {
   form.value = {...job};
   isEditing.value = true;
+  showFrom.value = true;
 };
 
 

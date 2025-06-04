@@ -21,16 +21,23 @@
     <div class="bg-white p-4 rounded-xl shadow mb-6">
       <h2 class="text-xl font-semibold mb-4">Filterlar</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <select class="p-2 border rounded w-full" v-model.number="selectedDepartmentId">
+
+        <select class="p-2 border cursor-pointer rounded outline-none px-2 w-full" v-model.number="selectedDepartmentId">
           <option disabled value="">Bo'limni tanlang</option>
-          <option v-for="department in departments" :key="department.id" :value="department.id">
+          <option :value="null">Hamma bo'lim</option>
+          <option class="hover:bg-gray-100" v-for="department in departments" :key="department.id" :value="department.id">
             {{ department.name }}
           </option>
         </select>
 
-        <select class="p-2 border rounded w-full" v-model="selectedJobId">
+        <select class="p-2 border outline-none rounded w-full cursor-pointer" v-model="selectedPositionStatus">
           <option disabled value="">Lavozimni tanlang</option>
-          <option v-for="job in filteredJobs" :key="job.id" :value="job.id">
+          <option value="">Hamma lavozimlar</option>
+          <option
+              v-for="job in uniqueJobs"
+              :key="job.positionStatus"
+              :value="job.positionStatus"
+          >
             {{ job.positionStatus }} ({{ getDepartmentName(job.departmentId) }})
           </option>
         </select>
@@ -39,7 +46,7 @@
 
     <!-- User Table -->
     <div class="bg-white p-4 rounded-xl shadow">
-      <h2 class="text-xl font-semibold mb-4">Foydalanuvchilar ro'yxati</h2>
+      <h2 class="text-xl font-semibold mb-4">Xodimlar ro'yxati</h2>
       <table class="min-w-full table-auto border">
         <thead>
         <tr class="bg-gray-200">
@@ -62,6 +69,9 @@
         </tr>
         </tbody>
       </table>
+      <div class="w-full text-center px-6 py-4" v-if="!filteredUsers?.length">
+        Foydalanuvchilar topilmadi
+      </div>
     </div>
   </div>
 </template>
@@ -70,6 +80,7 @@
 import {computed, onMounted, ref} from 'vue'
 import {ApiService} from "@/service/ApiService";
 import type {Department, Job, User} from "@/models/ProjectModels";
+import { useUsersStore } from "@/stores/usersStore";
 
 const jobCount = ref(0)
 const userCount = ref(0)
@@ -79,7 +90,7 @@ const jobs = ref<Job[]>([])
 const users = ref<User[]>([])
 const user = ref<User>();
 const selectedDepartmentId = ref<number | ''>('');
-const selectedJobId = ref<number | ''>('');
+const usersStore = useUsersStore();
 
 const positionStatuses = ref<{
   name: string;
@@ -127,8 +138,12 @@ const loadJobs = async () => {
 
 const loadUsers = async () => {
   try {
-    const rest = await ApiService.getAllUsers()
+    const rest = await ApiService.getAllUsers();
+    usersStore.state.users = rest.data
     users.value = rest.data
+    localStorage.setItem('users', JSON.stringify(rest.data));
+    console.log(users.value)
+    console.log(usersStore.state.users)
   } catch (error) {
     console.log(error)
   }
@@ -164,36 +179,36 @@ const getDepartmentName = (id: number) => {
 };
 
 const filteredUsers = computed(() => {
+  const departmentId = selectedDepartmentId.value;
+  const positionStatus = selectedPositionStatus.value;
   return users.value.filter(user => {
     const job = jobs.value.find(j => j.id === user.jobId);
 
-    const matchDepartment = selectedDepartmentId.value
-        ? job?.departmentId === selectedDepartmentId.value
-        : true;
+    if (!job) return false;
 
-    const matchJob = selectedJobId.value
-        ? user.jobId === selectedJobId.value
-        : true;
-
-    return matchDepartment && matchJob;
+    if (departmentId && job.departmentId !== departmentId) return false;
+    return !(positionStatus && job.positionStatus !== positionStatus);
   });
 });
 
+
 const filteredJobs = computed(() => {
-  let filtered = jobs.value;
+  if (!selectedDepartmentId.value) return jobs.value;
 
-  if (selectedDepartmentId.value) {
-    filtered = filtered.filter(job => job.departmentId === selectedDepartmentId.value);
-  }
+  return jobs.value.filter(job => job.departmentId === selectedDepartmentId.value);
+});
 
+const selectedPositionStatus = ref("");
+
+const uniqueJobs = computed(() => {
   const seen = new Set();
-  return filtered.filter(job => {
-    const key = job.positionStatus;
-    if (seen.has(key)) return false;
-    seen.add(key);
+  return filteredJobs.value.filter(job => {
+    if (seen.has(job.positionStatus)) return false;
+    seen.add(job.positionStatus);
     return true;
   });
 });
+
 
 onMounted(() => {
   loadStats()

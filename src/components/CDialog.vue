@@ -1,58 +1,58 @@
 <template>
   <Teleport to="body">
     <div
-        :class="[wrapperClass, { '!opacity-100 !visible': show }]"
-        data-modal="wrapper"
-        class="items-center p-3 fixed w-full h-full bg-[#060a2d99] flex justify-center z-[100] top-0 left-0 invisible opacity-0 transition-all duration-300"
-        @click="handleOuterClick"
+      :class="[wrapperClass, { '!opacity-100 !visible': show }]"
+      data-modal="wrapper"
+      class="items-center p-3 fixed w-full h-full bg-[#060a2d99] flex justify-center z-[100] top-0 left-0 invisible opacity-0 transition-all duration-300"
+      @click="handleOuterClick"
     >
       <Transition name="modal" mode="out-in">
         <div
-            v-if="show"
-            class="w-full flex justify-center"
-            :class="customClass ? customClass : 'lg:max-w-xl'"
+          v-if="show"
+          class="w-full flex justify-center"
+          :class="customClass ? customClass : 'lg:max-w-xl'"
         >
           <div
-              class="bg-white w-full shadow-xl relative max-h-[90vh] my-4 rounded-xl"
-              :class="[
+            class="bg-white w-full shadow-xl relative max-h-[90vh] my-4 rounded-xl"
+            :class="[
               bodyClass,
               { animated: animationIn },
               { 'overflow-y-auto': !isFlow },
             ]"
           >
             <div
-                v-if="!noHeader"
-                class="flex items-center border-b border-solid border-blue-50 px-6 pb-3.5 pt-4 bg-white rounded-t-xl"
-                :class="[headerStyle]"
+              v-if="!noHeader"
+              class="flex items-center border-b border-solid border-blue-50 px-6 pb-3.5 pt-4 bg-white rounded-t-xl"
+              :class="[headerStyle]"
             >
               <slot name="header">
                 <h3
-                    class="w-full text-xl text-dark leading-130 font-semibold"
-                    :class="titleStyle"
+                  class="w-full text-xl text-dark leading-130 font-semibold"
+                  :class="titleStyle"
                 >
                   {{ title }}
                 </h3>
                 <button
-                    class="w-8 h-8 border border-field-stroke-secondary flex items-center justify-center absolute top-4 right-5 rounded-full shrink-0 flex-center transition-300 group active:scale-95 z-40"
-                    :class="closeIconClass"
-                    @click="$emit('close')"
+                  class="w-8 h-8 border border-field-stroke-secondary flex items-center justify-center absolute top-4 right-5 rounded-full shrink-0 flex-center transition-300 group active:scale-95 z-40"
+                  :class="closeIconClass"
+                  @click="$emit('close')"
                 >
                   <Icon
-                      class="text-black group-hover:text-icon-brand-secondary"
-                      icon-name="close"
+                    class="text-black group-hover:text-icon-brand-secondary"
+                    icon-name="close"
                   />
                 </button>
               </slot>
             </div>
             <button
-                v-if="noHeader && hasCloseIcon"
-                class="w-8 h-8 border border-field-stroke-secondary flex items-center justify-center absolute top-3 right-4 rounded-full shrink-0 flex-center transition-300 group active:scale-95 z-40"
-                :class="closeIconClass"
-                @click="$emit('close')"
+              v-if="noHeader && hasCloseIcon"
+              class="w-8 h-8 border border-field-stroke-secondary flex items-center justify-center absolute top-3 right-4 rounded-full shrink-0 flex-center transition-300 group active:scale-95 z-40"
+              :class="closeIconClass"
+              @click="$emit('close')"
             >
               <Icon
-                  class="text-black group-hover:text-icon-brand-secondary"
-                  icon-name="close"
+                class="text-black group-hover:text-icon-brand-secondary"
+                icon-name="close"
               />
             </button>
             <slot />
@@ -119,14 +119,14 @@ function handleOuterClick(e: Event) {
 }
 
 watch(
-    () => props.show,
-    (val) => {
-      if (val) {
-        document.body.style.overflow = "hidden";
-      } else {
-        document.body.style.overflow = "auto";
-      }
+  () => props.show,
+  (val) => {
+    if (val) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
     }
+  }
 );
 onMounted(() => {
   document.addEventListener("keydown", (e) => {

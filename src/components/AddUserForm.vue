@@ -23,12 +23,20 @@
       <input v-model="form.username" type="text" class="input" placeholder="Username" required />
 
       <label class="block text-gray-700 mb-1">Parol</label>
-      <input
-          v-model="form.password"
-          type="text"
-          class="input"
-          :placeholder="isEditing ? 'Yangi parol ' : 'Parol kiriting'"
-      />
+      <div class="relative">
+        <input
+            v-model="form.password"
+            :type="passwordVisible ? 'text' : 'password'"
+            class="input pr-10"
+            :placeholder="isEditing ? 'Yangi parol' : 'Parol kiriting'"
+        />
+        <img
+            :src="passwordVisible ? '/images/svg/eye-open.svg' : '/images/svg/eye-password-hide-svgrepo-com.svg'"
+            class="absolute right-2 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer"
+            @click="passwordVisible = !passwordVisible"
+            alt="Toggle password visibility"
+        />
+      </div>
 
       <label class="block text-gray-700 mb-1">Holat</label>
       <select v-model="form.userStatus" class="input" required>
@@ -43,38 +51,49 @@
       <label class="block text-gray-700 mb-1">Ish</label>
       <select v-model="form.jobId" class="input" required>
         <option disabled value="">Tanlang</option>
-        <option v-for="(job,index) in jobs" :key="job.id" :value="job.id">
-          {{ index + 1 }} {{ job.positionStatus }}
+        <option
+            v-for="job in jobOptions"
+            :key="job.value"
+            :value="Number(job.value)">
+          {{ job?.text }}
         </option>
+
       </select>
 
       <label class="block text-gray-700 mb-1">Role tayinlash</label>
       <select v-model="selectedRoleIds" @change="updateSelectedRoles" class="input" multiple required>
         <option v-for="role in roles" :key="role.id" :value="role.id">{{ role.name.replace('ROLE_', '') }}</option>
       </select>
+
       <div class="flex gap-4 mt-4">
-        <button type="submit" class="btn-green"> {{isEditing ? 'Yangilash' : 'Saqlash' }} </button>
-        <button type="button" @click="$emit('reset')" class="btn-gray">Tozalash</button>
+        <button type="submit" class="btn-green cursor-pointer"> {{isEditing ? 'Yangilash' : 'Saqlash' }} </button>
+        <button type="button" class="btn-gray cursor-pointer" @click="$emit('reset')">Tozalash</button>
       </div>
     </form>
   </div>
 </template>
 
 <script setup lang="ts">
-import {ref, defineProps, defineEmits, watch} from 'vue'
+import {ref, defineProps, defineEmits, watch, computed,} from 'vue'
 import type {createUser, Role, Job, Department} from '@/models/ProjectModels'
 
 const props = defineProps<{
+  mode: 'create' | 'update',
+  userId?: number
   modelValue: createUser
   isEditing?: Boolean
-  jobs: Job[],
-  roles: Role[],
-  departments: Department[],
+  jobs: Job[]
+  isFreeJobList: Job[]
+  roles: Role[]
+  departments: Department[]
 }>()
 
-const emit = defineEmits(['update:modelValue','submit', 'reset'])
+const passwordVisible = ref(false)
+const emit = defineEmits(['update:modelValue', 'submit', 'reset'])
 const form = ref<createUser>({...props.modelValue})
 const selectedRoleIds = ref<number[]>([])
+
+
 
 watch(() => props.modelValue.roles, (newVal, oldVal) => {
   if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
@@ -98,10 +117,19 @@ const submitForm = () => {
 
 watch(form, (newVal, oldVal) => {
   if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
-    emit('update:modelValue', newVal);
+    emit('update:modelValue', newVal)
   }
-}, { deep: true });
+}, { deep: true })
+
+const jobOptions = computed(() =>
+    (props.isEditing ? props.isFreeJobList : props.jobs).map((job, index) => ({
+      value: job.id,
+      text: `${props.isEditing ? '' : index + 1 + ' '}${job.positionStatus} (${job?.department?.name || ''})`,
+    }))
+)
+
 </script>
+
 
 <style scoped>
 @reference "tailwindcss";

@@ -31,13 +31,23 @@
 
         <button
             type="submit"
-            class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105"
+            class="w-full py-2 px-4 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105"
         >
           Kirish
         </button>
       </form>
     </div>
-  </div>
+  </div>const loadUsers = async () => {
+  try {
+  const rest = await ApiService.getAllUsers();
+  usersStore.state.users = rest.data
+  users.value = rest.data
+  console.log(users.value)
+  console.log(usersStore.state.users)
+  } catch (error) {
+  console.log(error)
+  }
+  }
 </template>
 
 
@@ -59,15 +69,20 @@ const router = useRouter();
 const handleSubmit = async () => {
   try {
     const response = await AuthService.login(form.value);
-    console.log('response', response)
     localStorage.setItem('token', response.token);
     localStorage.setItem('userId', response.userId);
-    localStorage.setItem('role', response.role);
+    localStorage.setItem('roles', response.roles);
 
+    localStorage.setItem('user', JSON.stringify({
+      firstName: response.firstName,
+      lastName: response.lastName
+    }));
+    console.log(response)
     await router.push({name: 'DashboardView'});
     showToast("Tizimga mufaqqiyatli kirdiz", "success");
   } catch (err) {
-    showToast("Tizimga kirishda xatolik: Login yoki parolda hatolik bor", "warning");
+    showToast("Login yoki parolda hatolik bor Adminga murojot qiling", "info");
   }
 };
+
 </script>

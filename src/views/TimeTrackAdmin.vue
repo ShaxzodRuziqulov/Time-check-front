@@ -1,8 +1,12 @@
 <template>
   <div class="p-6 space-y-10 bg-gray-50 min-h-screen">
-    <CButton @click="showForm = true" class="my-4 max-w-[192px] mx-auto cursor-pointer flex items-center justify-center"
-             text="Yangi vaqt qo‘shish" variant="primary"/>
-
+    <CButton
+        @click="showForm = true"
+        v-if="!trackSettings.length"
+        class="max-w-[192px] mx-auto cursor-pointer flex items-center justify-center"
+        text="Ish rejimini boshqarish"
+        variant="primary"
+    />
     <CDialog
         has-close-icon
         no-header
@@ -23,40 +27,22 @@
         @close="showDeleteConfirmSetting = false"
         bodyClass="rounded-lg !bg-bg-primary text-center px-4 py-6"
     >
-      <p class="text-lg font-semibold mb-4">Ushbu vaqtni o'chirmoqchimisiz?</p>
-      <div class="flex justify-center gap-4">
-        <button
-            @click="handleDeleteConfirmedSettings"
-            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-medium">
-          Ha, o‘chirish
-        </button>
-        <button
-            @click="showDeleteConfirmSetting = false"
-            class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md font-medium"
-        >
-          Bekor qilish
-        </button>
-      </div>
+      <DeleteConfirm
+          v-model:show="showDeleteConfirmSetting"
+          title="Ushbu vaqtni o'chirmoqchimisiz?"
+          @confirm="handleDeleteConfirmedSettings"
+      />
     </CDialog>
     <CDialog
         :show="showDeleteConfirm"
         @close="showDeleteConfirm = false"
         bodyClass="rounded-lg !bg-bg-primary text-center px-4 py-6"
     >
-      <p class="text-lg font-semibold mb-4">Ushbu foydalanuvchini o'chirmoqchimisiz?</p>
-      <div class="flex justify-center gap-4">
-        <button
-            @click="handleDeleteConfirmedTrack"
-            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-medium">
-          Ha, o‘chirish
-        </button>
-        <button
-            @click="showDeleteConfirm = false"
-            class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md font-medium"
-        >
-          Bekor qilish
-        </button>
-      </div>
+      <DeleteConfirm
+          v-model:show="showDeleteConfirm"
+          title="Ushbu foydalanuvchini o'chirmoqchimisiz?"
+          @confirm="handleDeleteConfirmedTrack"
+      />
     </CDialog>
     <!-- Track Settings Card -->
 
@@ -92,108 +78,132 @@
     </div>
     <!-- Time Track Card -->
     <div class="bg-white rounded-2xl shadow-lg p-6 space-y-6">
-      <h2 class="text-2xl font-bold text-green-700 border-b pb-2">Vaqt hisoboti</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-gray-600 font-medium mb-1">Kechikish sababi</label>
-          <input
-              v-model="createTimeTrack.delayReason"
-              type="text"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-400"/>
-        </div>
-        <div>
-          <label class="block text-gray-600 font-medium mb-1">Tugash sababi</label>
-          <input
-              v-model="createTimeTrack.endReason"
-              type="text"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-400"/>
-        </div>
-        <div>
-          <label
-              class="block text-gray-600 font-medium mb-1">Foydalanuvchi</label>
+      <CButton
+          @click="showFormTime = true"
+          class="max-w-max mx-auto cursor-pointer flex items-center justify-center"
+          text="Xodimlarning kechikish sabablarini boshqarish"
+          variant="primary"
+      />
+      <CDialog
+          has-close-icon
+          no-header
+          :show="showFormTime"
+          @close="closeDialogTime"
+          bodyClass="rounded-lg !bg-bg-primary"
+      >
+        <AddTimeTrack
+            v-model="timeTrackForm"
+            :is-editing="isEditing"
+            :users="users"
+            @submit="submitTimeTrack"
+            @reset="isResetMessageTime"
+        />
+      </CDialog>
 
-          <select
-              v-model="createTimeTrack.userId"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400">
-            <option disabled value="">Foydalanuvchini tanlang</option>
-            <option v-for="user in users" :key="user.id" :value="user.id">
-              {{ user.firstName }}
-            </option>
-          </select>
+      <div class="mt-6 overflow-x-auto">
+        <!-- Filters -->
+        <div class="bg-white p-4 rounded-xl shadow mb-6">
+          <h2 class="text-xl font-semibold mb-4">Filterlar</h2>
+          <div
+              class="flex items-center justify-between gap-3 max-w-[860px]">
+
+            <select class="p-2 border rounded w-full cursor-pointer" v-model.number="selectedDepartmentId">
+              <option disabled :value="null">Bo'limni tanlang</option>
+              <option :value="null">Hamma bo'lim</option>
+              <option v-for="department in departments" :key="department.id" :value="department.id">
+                {{ department.name }}
+              </option>
+            </select>
+
+            <input type="date"
+                   v-model="dateFrom"
+                   class="p-2 border rounded w-full"
+                   placeholder="Boshlanish sanasi">
+
+            <input type="date"
+                   v-model="dateTo"
+                   class="p-2 border rounded w-full"
+                   placeholder="Tugash sanasi">
+            <button
+                @click="clearFilters"
+                class="bg-red-400 hover:bg-red-500 text-white px-5 py-2 rounded-lg font-semibold cursor-pointer mt-1">
+              Tozalash
+            </button>
+          </div>
         </div>
-        <div>
-          <label class="block text-gray-700 font-medium mb-1"> Sana</label>
-          <input
-              v-model="createTimeTrack.date"
-              type="date"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400"
-              required
+
+        <template v-if="timeTracks?.length && timeTracks?.length > 0">
+          <h3 class="text-xl font-semibold text-gray-800 mb-3">Ishni boshlaganlar ro'yxati</h3>
+
+
+          <table class="w-full table-fixed text-sm bg-white border border-gray-200 rounded-xl overflow-hidden">
+            <thead class="bg-gray-100 text-gray-700 font-medium text-xs uppercase">
+            <tr>
+              <th class="px-4 py-3 text-left w-5">#</th>
+              <th class="px-4 py-3 text-left">F.I.O</th>
+              <th class="px-4 py-3 text-left">Bo'lim</th>
+              <th class="px-4 py-3 text-left">Boshlagan vaqt</th>
+              <th class="px-4 py-3 text-left">Kechikgan vaqt</th>
+              <th class="px-4 py-3 text-left">Tugatgan vaqt</th>
+              <th class="px-4 py-3 text-left">Qachon</th>
+              <th class="px-4 py-3 text-left w-[300px] max-w-[300px]">Kechikish sababi</th>
+              <th class="px-4 py-3 text-left">Tugatish sababi</th>
+              <th class="px-4 py-3 text-left">Amallar</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="(track, index) in sortTimeTrack" :key="track?.id" class="hover:bg-gray-50 border-t">
+              <td class="px-4 py-3 w-5">{{ index + 1 }}</td>
+              <td class="px-4 py-3">{{ getFullName(track) }}</td>
+              <td class="px-4 py-3">{{ track?.user?.job?.department?.name }}</td>
+              <td class="px-4 py-3">{{ formatTimeOnly(track.startTime) }}</td>
+              <td class="px-4 py-3">{{ getTimeDiff(track) }}</td>
+              <td class="px-4 py-3">{{ formatTimeOnly(track.endTime) }}</td>
+              <td class="px-4 py-3">{{ track.date }}</td>
+              <td class="px-4 py-3 w-[300px] max-w-[30px]">{{ track.delayReason }}</td>
+              <td class="px-4 py-3">{{ track.endReason }}</td>
+              <td class="px-4 py-3 flex gap-2">
+                <button @click="editTimeTrack(track)"
+                        class="bg-yellow-500 cursor-pointer hover:bg-yellow-600 text-white px-3 py-1 rounded-md">Edit
+                </button>
+                <button @click="confirmDelete(track.id)"
+                        class="bg-red-600 cursor-pointer hover:bg-red-700 text-white px-3 py-1 rounded-md">Delete
+                </button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </template>
+        <div v-if="isEmptyState" class="text-center">
+          {{ emptyMessage }}
+        </div>
+
+        <div v-if="totalCount && totalCount >= 10" class="flex justify-end items-center mt-6 space-x-4">
+          <button
+              @click="prevPage"
+              :disabled="currentPage === 0"
+              class="flex items-center gap-1 px-4 py-2 rounded-lg transition duration-200 text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
+            ⬅ Oldingi
+          </button>
+          <span class="text-gray-600 text-sm">Sahifa: {{ currentPage + 1 }} / {{ totalPages }}</span>
+          <button
+              @click="nextPage"
+              :disabled="currentPage >= totalPages - 1"
+              class="flex items-center gap-1 px-4 py-2 rounded-lg transition duration-200 text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Keyingi ➡
+          </button>
         </div>
-      </div>
-
-      <div class="flex gap-3">
-        <button
-            @click="submitTimeTrack"
-            class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg font-semibold cursor-pointer">
-          {{ isEditing ? "Yangilash" : "Saqlash" }}
-        </button>
-        <button
-            type="button"
-            @click="resetTimeTrack"
-            class="bg-gray-400 hover:bg-gray-500 text-white px-5 py-2 rounded-lg font-semibold cursor-pointer">
-          Bekor qilish
-        </button>
-      </div>
-
-      <div v-if="timeTracks.length" class="mt-6 overflow-x-auto">
-        <h3 class="text-xl font-semibold text-gray-800 mb-3">Ishni boshlaganlar ro'yxati</h3>
-        <table class="w-full text-sm bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <thead class="bg-gray-100 text-gray-700 font-medium text-xs uppercase">
-          <tr>
-            <th class="px-4 py-3 text-left">#</th>
-            <th class="px-4 py-3 text-left">Kechikish sababi</th>
-            <th class="px-4 py-3 text-left">Tugatish sababi</th>
-            <th class="px-4 py-3 text-left">F.I.O</th>
-            <th class="px-4 py-3 text-left">Boshlagan vaqt</th>
-            <th class="px-4 py-3 text-left">Kechikgan vaqt</th>
-            <th class="px-4 py-3 text-left">Tugatgan vaqt</th>
-            <th class="px-4 py-3 text-left">Qachon</th>
-            <th class="px-4 py-3 text-left">Amallar</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr v-for="(track, index) in sortTimeTrack" :key="track?.id" class="hover:bg-gray-50 border-t">
-            <td class="px-4 py-3">{{ index + 1 }}</td>
-            <td class="px-4 py-3">{{ track.delayReason }}</td>
-            <td class="px-4 py-3">{{ track.endReason }}</td>
-            <td class="px-4 py-3">{{ getFullName(track.userId) }}</td>
-            <td class="px-4 py-3">{{ formatTimeOnly(track.startTime) }}</td>
-            <td class="px-4 py-3">{{ getTimeDiff(track) }}</td>
-            <td class="px-4 py-3">{{ track.endTime }}</td>
-            <td class="px-4 py-3">{{ track.date }}</td>
-            <td class="px-4 py-3 flex gap-2">
-              <button @click="editTimeTrack(track)"
-                      class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md">Edit
-              </button>
-              <button @click="confirmDelete(track.id)"
-                      class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md">Delete
-              </button>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, ref} from 'vue'
+import {computed, onMounted, ref, watch} from 'vue'
 import type {
-  createTimeTrack,
-  createTrackSettings,
+  createTrackSettings, Department,
   TimeTrack,
   TrackSettings,
   updateTimeTrack,
@@ -203,20 +213,27 @@ import type {
 import {ApiService} from "@/service/ApiService";
 import {useCustomToast} from "@/composables/useCustomToast";
 import CDialog from "@/components/CDialog.vue";
-import axios from "axios";
 import CButton from "@/components/CButton.vue";
 import AddTimeSettings from "@/components/AddTimeSettings.vue";
+import AddTimeTrack from "@/components/AddTimeTrack.vue";
+import DeleteConfirm from "@/components/DeleteConfirm.vue";
 
 const isEditing = ref(false);
 const trackSettings = ref<TrackSettings[]>([])
 const {showToast} = useCustomToast();
 const showDeleteConfirm = ref(false);
 const showDeleteConfirmSetting = ref(false);
-const selectedUserId = ref<number | null>(null)
-const page = ref(0)
-const size = ref(10)
+const selectedUserId = ref<number | null>(null);
+
 const totalPages = ref(0)
+const totalCount = ref(0)
 const showForm = ref(false)
+const showFormTime = ref(false)
+const selectedDepartmentId = ref<number | null>(null)
+const dateFrom = ref<string>('')
+const dateTo = ref<string>('');
+
+const departments = ref<Department[]>([])
 
 const create = ref<createTrackSettings>({
   fromTime: '',
@@ -234,6 +251,17 @@ const update = ref<updateTrackSettings>({
 const closeDialog = () => {
   resetMessage()
 }
+
+const isEmptyState = computed(() => {
+  return !!emptyMessage.value;
+})
+
+const emptyMessage = computed(() => {
+  if (!timeTracks.value?.length) {
+    return "Foydalanuvchi topilmadi";
+  }
+})
+
 
 const submitTrackSettings = async () => {
   try {
@@ -261,6 +289,14 @@ const loadTrackSettings = async () => {
   }
 }
 
+const loadDepartment = async () => {
+  try {
+    const rest = await ApiService.getAllDepartments()
+    departments.value = rest.data
+  } catch (err) {
+    console.log(err)
+  }
+}
 const editMessageTSettings = (track: updateTrackSettings) => {
   showForm.value = true
   isEditing.value = true
@@ -268,8 +304,6 @@ const editMessageTSettings = (track: updateTrackSettings) => {
     ...track
   }
 }
-
-const timeTracks = ref<TimeTrack[]>([])
 
 const isResetMessage = () => {
   create.value = {
@@ -329,36 +363,20 @@ const handleDeleteConfirmedTrack = async () => {
   }
 }
 
-const createTimeTrack = ref<createTimeTrack>({
+// timeTrack
+
+const timeTracks = ref<TimeTrack[]>([])
+
+const timeTrackForm = ref<Partial<updateTimeTrack>>({
   date: '',
-  userId: "",
+  userId: '',
   startTime: '',
   endTime: '',
   delayReason: '',
-  endReason: ''
-
-})
-
-const updateTimeTrack = ref<updateTimeTrack>({
-  delayReason: "",
-  date: '',
-  endReason: "",
-  endTime: "",
-  startTime: "",
-  userId: "",
-  id: 0
+  endReason: '',
 })
 
 const users = ref<User[]>([])
-
-const loadTimeTrack = async () => {
-  try {
-    const rest = await ApiService.findAllTimeTracks()
-    timeTracks.value = rest.data
-  } catch (err) {
-    console.log(err)
-  }
-}
 
 const loadUsers = async () => {
   try {
@@ -371,54 +389,95 @@ const loadUsers = async () => {
 
 const submitTimeTrack = async () => {
   try {
-    if (isEditing.value && updateTimeTrack.value.id) {
-      await ApiService.updateTimeTrack(updateTimeTrack.value.id, updateTimeTrack.value)
+    if (!timeTrackForm.value.userId) {
+      showToast("Foydalanuvchini tanlang", "info")
+      return
+    }
+    if (isEditing.value && timeTrackForm?.value?.id !== undefined) {
+      await ApiService.updateTimeTrack(timeTrackForm.value.id, timeTrackForm.value)
       showToast("Muvaffaqiyatli o'zgartirildi", "success")
     } else {
-      await ApiService.createReasons(createTimeTrack.value)
+      await ApiService.createReasons(timeTrackForm.value)
       showToast("Muvaffaqiyatli yaratildi", "success")
     }
-    await loadTimeTrack()
+    await loadTimeTrackPagination()
     resetTimeTrack()
-  } catch (err) {
-    console.log(err)
+    showFormTime.value = false;
+  } catch (error) {
+    console.log(error)
   }
 }
-
+const closeDialogTime = () => {
+  resetTimeTrack()
+}
 const editTimeTrack = (timeTrack: updateTimeTrack) => {
-  createTimeTrack.value = {...timeTrack}
+  timeTrackForm.value = {
+    date: timeTrack.date,
+    userId: timeTrack.user?.id || "",
+    startTime: timeTrack.startTime || '',
+    endTime: timeTrack.endTime || '',
+    delayReason: timeTrack.delayReason || '',
+    endReason: timeTrack.endReason || '',
+    id: timeTrack.id || undefined,
+  }
   isEditing.value = true
+  showFormTime.value = true
 }
 
 const deleteTimeTrack = async (id: number) => {
   await ApiService.deleteTimeTrack(id)
-  await loadTimeTrack()
+  await loadTimeTrackPagination()
 }
 
 const resetTimeTrack = () => {
-  createTimeTrack.value = {
-    userId: 0,
-    delayReason: '',
+  timeTrackForm.value = {
     date: '',
-    endReason: ''
-  }
-  updateTimeTrack.value = {
-    userId: 0,
+    userId: '',
+    startTime: '',
+    endTime: '',
     delayReason: '',
-    date: '',
     endReason: '',
-    id: 0
+    id: undefined
   }
   isEditing.value = false
+  showFormTime.value = false;
+
 }
 
-const getFullName = (id: number) => {
-  const user = users.value?.find(user => user.id === id)
-  return user ? `${user.firstName} ${user.lastName} ${user.middleName}` : "Nomalum"
+const isResetMessageTime = () => {
+  timeTrackForm.value = {
+    date: '',
+    userId: '',
+    startTime: '',
+    endTime: '',
+    delayReason: '',
+    endReason: '',
+    id: undefined
+  }
 }
+
+const getFullName = (item: any): string => {
+  if (!item) return "Nomalum";
+  const parts = [item?.user?.lastName, item?.user?.firstName, item?.user?.middleName].filter(Boolean);
+  return parts.join(' ');
+};
 
 const sortTimeTrack = computed(() => {
-  return timeTracks.value.sort((a, b) => b.id - a.id)
+  return (timeTracks.value || [])
+      .slice()
+      .sort((a, b) => {
+        const timeA = new Date(a.date).getTime();
+        const timeB = new Date(b.date).getTime();
+
+        if (isNaN(timeA) || isNaN(timeB)) return 0;
+
+        return timeB - timeA;
+      });
+});
+
+watch([selectedDepartmentId, dateFrom, dateTo], () => {
+  currentPage.value = 0
+  loadTimeTrackPagination()
 })
 
 function formatTimeOnly(time?: string): string {
@@ -437,60 +496,77 @@ function getTimeDiff(item: any) {
 
   const lunchEnd = new Date("1970-01-01T14:00");
 
-  if (isNaN(start.getTime()) || isNaN(end.getTime())) return "Invalid time";
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) return "";
 
   let diffMs = start.getTime() - end.getTime();
 
   if (start > lunchEnd) {
-    diffMs -= 1000 * 60 * 60
+    diffMs -= 1000 * 60 * 60;
   }
 
   if (diffMs < 0) return "";
-
   const hours = Math.floor(diffMs / (1000 * 60 * 60));
   const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
 
-  const pad = (n: number) => String(n).padStart(2, '0');
-
-  if (hours > 0) {
-    return `${pad(hours)} soat ${pad(minutes)} minut`;
-  } else {
-    return `${pad(minutes)} minut`;
+  if (hours === 0) {
+    return `${minutes} daqiqa`;
   }
+  return `${hours} soat ${minutes} daqiqa`;
 }
 
-const loadTimeTracks = async () => {
-  const res = await axios.get('/api/user/time-track', {
-    params: {
-      page: page.value,
-      size: size.value
-    }
-  })
-  timeTracks.value = res.data.content
-  totalPages.value = res.data.totalPages
-}
+const currentPage = ref(0)
+const pageSize = (10)
 
-const nextPage = () => {
-  if (page.value + 1 < totalPages.value) {
-    page.value++;
-    loadTimeTracks();
+const loadTimeTrackPagination = async () => {
+  try {
+    const filter = {
+      departmentId: selectedDepartmentId.value || undefined,
+      fromDate: dateFrom.value || undefined,
+      toDate: dateTo.value || undefined
+    };
+
+    const response = await ApiService.pagination(
+        currentPage.value,
+        pageSize,
+        filter
+    );
+
+    const data = response.data;
+
+    timeTracks.value = data.content;
+    totalCount.value = data.totalElements;
+    totalPages.value = data.totalPages;
+
+  } catch (err) {
+    console.error('❌ Error loading time tracks:', err);
   }
-}
+};
+
 
 const prevPage = () => {
-  if (page.value > 0) {
-    page.value--;
-    loadTimeTracks();
+  if (currentPage.value > 0) {
+    currentPage.value--;
+    loadTimeTrackPagination();
   }
-}
+};
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value - 1) {
+    currentPage.value++;
+    loadTimeTrackPagination();
+  }
+};
+
+const clearFilters = () => {
+  selectedDepartmentId.value = null;
+  dateFrom.value = '';
+  dateTo.value = '';
+};
 
 onMounted(() => {
   loadTrackSettings()
   loadUsers()
-  loadTimeTrack()
-  // loadTimeTracks()
+  loadTimeTrackPagination()
+  loadDepartment()
 })
 </script>
-
-<style scoped>
-</style>
