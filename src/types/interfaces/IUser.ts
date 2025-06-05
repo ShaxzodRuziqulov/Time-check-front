@@ -6,10 +6,11 @@ export interface IUser {
     birthDate: string;
     username: string;
     password: string;
-    roles: string[];
+    roles: string[] | string;
     userId: number;
     jobId: number;
     userStatus: string;
     createdAt: string;
     updatedAt: string;
+    token: string;
 }

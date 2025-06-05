@@ -106,7 +106,7 @@ onMounted(() => {
     showToast('Foydalanuvchi topilmadi', 'error')
     return;
   }
-  form.id = user.value.userId || 0;
+  form.id = user.value.id || 0;
   form.firstName = user.value.firstName || "";
   form.lastName = user.value.lastName || "";
   form.middleName = user.value.middleName || "";
@@ -128,9 +128,9 @@ async function saveChanges() {
   if (!user.value) return;
 
   try {
-    console.log("Отправляемые данные:", form, user.value.userId);
+    console.log("Отправляемые данные:", form, user.value.id);
 
-    await axiosInstance.put(`/api/user/update-profile/${user.value.userId}`, form);
+    await axiosInstance.put(`/api/user/update-profile/${user.value.id}`, form);
     showToast("Ma'lumotlar yangilandi ✅", "success");
     const updatedUsers = getUsers.value.map((user: IUser) =>
         user.id === userId ? { ...user, ...form } : user

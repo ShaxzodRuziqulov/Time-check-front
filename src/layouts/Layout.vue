@@ -13,4 +13,9 @@
 
 <script setup lang="ts">
 import Header from "@/components/Header.vue";
+import {onMounted} from "vue";
+import {useUsersStore} from "@/stores/usersStore";
+onMounted(async ()=>{
+  await useUsersStore().getUsersWithDetails();
+})
 </script>

@@ -1,5 +1,6 @@
-import type {RouteRecordRaw} from "vue-router";
-import {createRouter, createWebHistory} from "vue-router";
+import type { RouteRecordRaw } from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
+import { useUsersStore } from "@/stores/usersStore";
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -72,48 +73,41 @@ const router = createRouter({
     routes
 })
 
-// Role-based access control configuration
-const roleBasedRoutes = {
-    'ROLE_ADMIN': '/dashboard',
-    'ROLE_USER': '/time-track'
-};
 
-router.beforeEach((to, _, next) => {
-    const token = localStorage.getItem("token");
-    const roles: string[] = localStorage.getItem("roles")?.split(",").filter(Boolean) || [];
-    const isAuthenticated = !!token;
+router.beforeEach(async (to, _, next) => {
+    const usersStore = useUsersStore();
+    const isAuthenticated = usersStore.isAuthenticated;
     const isLoginPage = to.name === 'Login';
 
-    // If route requires auth and user is not authenticated, redirect to login
+    // Если пользователь не аутентифицирован и пытается получить доступ к защищенному маршруту
     if (to.meta.requiresAuth && !isAuthenticated) {
         return next({ name: 'Login' });
     }
 
-    // If user is authenticated and tries to access login page, redirect based on role
     if (isAuthenticated && isLoginPage) {
-        // Check for admin first, then user
+        const user = usersStore.getCurrentUser;
+
+        // Handle both string and string[] cases
+        let roles: string[] = [];
+
+        if (user?.roles) {
+            roles = Array.isArray(user.roles)
+                ? user.roles
+                : user.roles.split(',').map(role => role.trim());
+        }
+
         if (roles.includes('ROLE_ADMIN')) {
-            return next(roleBasedRoutes['ROLE_ADMIN']);
-        }
-        if (roles.includes('ROLE_USER')) {
-            return next(roleBasedRoutes['ROLE_USER']);
-        }
-    }
-
-    // If user is authenticated but tries to access admin routes without admin role
-    if (isAuthenticated && to.path.startsWith('/admin/') && !roles.includes('ROLE_ADMIN')) {
-        return next(roles.includes('ROLE_USER') ? roleBasedRoutes['ROLE_USER'] : '/');
-    }
-
-    // If user is a regular user, restrict access to non-allowed routes
-    if (isAuthenticated && roles.includes('ROLE_USER') && !roles.includes('ROLE_ADMIN')) {
-        const allowedPaths = ['/time-track', '/time-track/user/profile'];
-        if (!allowedPaths.some(path => to.path.startsWith(path))) {
-            return next(roleBasedRoutes['ROLE_USER']);
+            return next('/dashboard');
+        } else if (roles.includes('ROLE_USER')) {
+            return next('/time-track');
         }
     }
 
-    return next();
+    if (isAuthenticated && to.path.startsWith('/admin') && !usersStore.getCurrentUser?.roles?.includes('ROLE_ADMIN')) {
+        return next('/');
+    }
+
+    next();
 });
 
 
