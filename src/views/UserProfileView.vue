@@ -61,12 +61,15 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, Ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { IUser } from "@/types/interfaces/IUser";
-import { useCustomToast } from "@/composables/useCustomToast";
-import axiosInstance from "@/axios";
+import { reactive, ref, computed, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import { useCustomToast } from '@/composables/useCustomToast';
+import axiosInstance from '@/axios';
+import { useUsersStore } from "@/stores/usersStore";
+
 const router = useRouter();
+const { showToast } = useCustomToast();
+const usersStore = useUsersStore();
 
 interface IFormData {
   id: number;
@@ -76,74 +79,108 @@ interface IFormData {
   birthDate: string;
 }
 
-const originalData = ref({}) as Ref<IFormData>;
-const isLoading: Ref<boolean> = ref(false);
-const { showToast } = useCustomToast()
-
-
 const form = reactive<IFormData>({
   id: 0,
-  firstName: "",
-  lastName: "",
-  middleName: "",
-  birthDate: "",
+  firstName: '',
+  lastName: '',
+  middleName: '',
+  birthDate: ''
 });
 
-const userId: number = Number(localStorage.getItem("userId"));
+const originalData = ref<IFormData>({ ...form });
+const isLoading = ref(true);
+const userId = computed(() => Number(usersStore.state.currentUser.userId));
 
-const getUsers = computed(() => {
-    return JSON.parse(localStorage.getItem("users") || "[]");
-});
-
-const user = computed<IUser | null>(() => {
-  return getUsers.value.find((user: IUser) => user?.userId === userId) || null;
-});
-console.log(user.value)
-
-
-onMounted(() => {
-  if (!user.value) {
-    showToast('Foydalanuvchi topilmadi', 'error')
-    return;
+// Watch for userId changes
+watch(userId, (newVal) => {
+  if (newVal) {
+    loadUserData();
   }
-  form.id = user.value.id || 0;
-  form.firstName = user.value.firstName || "";
-  form.lastName = user.value.lastName || "";
-  form.middleName = user.value.middleName || "";
-  form.birthDate = user.value.birthDate || "";
-  originalData.value = { ...form };
-  isLoading.value = false;
+}, { immediate: true });
+
+// Watch for users array changes
+watch(() => usersStore.state.users, (users) => {
+  if (users?.length > 0 && userId.value) {
+    updateFormFromStore();
+  }
 });
 
-const hasChanges = computed(() => {
-  return (
-      form.firstName !== originalData.value.firstName ||
-      form.lastName !== originalData.value.lastName ||
-      form.middleName !== originalData.value.middleName ||
-      form.birthDate !== originalData.value.birthDate
-  );
-});
-
-async function saveChanges() {
-  if (!user.value) return;
-
-  try {
-    console.log("Отправляемые данные:", form, user.value.id);
-
-    await axiosInstance.put(`/api/user/update-profile/${user.value.id}`, form);
-    showToast("Ma'lumotlar yangilandi ✅", "success");
-    const updatedUsers = getUsers.value.map((user: IUser) =>
-        user.id === userId ? { ...user, ...form } : user
-    );
-    localStorage.setItem("users", JSON.stringify(updatedUsers));
-    originalData.value = { ...form };
-  } catch (error) {
-    console.error("Xatolik yuz berdi:", error);
-    showToast("Xatolik yuz berdi. Iltimos qaytadan urinib ko'ring.", "error");
+function updateFormFromStore() {
+  const user = usersStore.state.users.find(u => u.userId === userId.value);
+  if (user) {
+    Object.assign(form, {
+      id: user.id || 0,
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      middleName: user.middleName || '',
+      birthDate: user.birthDate || ''
+    });
+    Object.assign(originalData.value, form);
   }
 }
 
+async function loadUserData() {
+  if (!userId.value) {
+    showToast('Foydalanuvchi ID si topilmadi', 'error');
+    isLoading.value = false;
+    return;
+  }
 
+  try {
+    // First try to get from store
+    if (usersStore.state.users.length === 0) {
+      await usersStore.getUsersWithDetails();
+    } else {
+      updateFormFromStore();
+    }
+
+    // If still no user data, try direct API call
+    if (!form.id && userId.value) {
+      const response = await axiosInstance.get(`/api/user/${userId.value}`);
+      if (response.data) {
+        usersStore.state.users.push(response.data);
+        updateFormFromStore();
+      }
+    }
+
+    if (!form.id) {
+      showToast('Foydalanuvchi ma\'lumotlari topilmadi', 'error');
+    }
+  } catch (error) {
+    console.error('Xatolik yuz berdi:', error);
+    showToast("Ma'lumotlarni yuklashda xatolik yuz berdi", 'error');
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+async function saveChanges() {
+  if (!form.id) return;
+
+  try {
+    const response = await axiosInstance.put(`/api/user/update-profile/${form.id}`, form);
+    if (response.data) {
+      showToast("Ma'lumotlar yangilandi ✅", 'success');
+      // Update user in store
+      const userIndex = usersStore.state.users.findIndex(u => u.userId === userId.value);
+      if (userIndex !== -1) {
+        usersStore.state.users[userIndex] = {
+          ...usersStore.state.users[userIndex],
+          ...form
+        };
+      }
+      Object.assign(originalData.value, form);
+    }
+  } catch (error) {
+    console.error('Xatolik yuz berdi:', error);
+    showToast("Xatolik yuz berdi. Iltimos qaytadan urinib ko'ring.", 'error');
+  }
+}
+const hasChanges = computed(() => {
+  return Object.keys(form).some(key =>
+      form[key as keyof IFormData] !== originalData.value[key as keyof IFormData]
+  );
+});
 function cancelEdit() {
   router.go(-1);
 }

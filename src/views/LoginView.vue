@@ -37,17 +37,7 @@
         </button>
       </form>
     </div>
-  </div>const loadUsers = async () => {
-  try {
-  const rest = await ApiService.getAllUsers();
-  usersStore.state.users = rest.data
-  users.value = rest.data
-  console.log(users.value)
-  console.log(usersStore.state.users)
-  } catch (error) {
-  console.log(error)
-  }
-  }
+  </div>
 </template>
 
 
@@ -57,31 +47,72 @@ import {ref} from "vue";
 import {useRouter} from "vue-router";
 import {AuthService} from "@/service/AuthService";
 import {useCustomToast} from "@/composables/useCustomToast";
+import {useUsersStore} from "@/stores/usersStore";
 
 const { showToast } = useCustomToast();
-
+const usersStore = useUsersStore();
 const form = ref<LoginUser>({
   username: '',
   password: '',
 });
 const router = useRouter();
 
+// LoginView.vue
 const handleSubmit = async () => {
   try {
-    const response = await AuthService.login(form.value);
-    localStorage.setItem('token', response.token);
-    localStorage.setItem('userId', response.userId);
-    localStorage.setItem('roles', response.roles);
+    console.log('Login form data:', form.value);
+    const userData = await AuthService.login(form.value);
+    console.log('Login response:', userData);
 
-    localStorage.setItem('user', JSON.stringify({
-      firstName: response.firstName,
-      lastName: response.lastName
-    }));
-    console.log(response)
-    await router.push({name: 'DashboardView'});
-    showToast("Tizimga mufaqqiyatli kirdiz", "success");
-  } catch (err) {
-    showToast("Login yoki parolda hatolik bor Adminga murojot qiling", "info");
+    if (!userData) {
+      throw new Error('No user data received');
+    }
+
+    console.log('User data:', userData);
+    usersStore.setCurrentUser(userData);
+    showToast("Tizimga muvaffaqiyatli kirdingiz", "success");
+
+    // Get roles from the JWT token or user data
+    let roles: string[] = [];
+
+    // Check if roles is an array
+    if (Array.isArray(userData.roles)) {
+      roles = userData.roles;
+    }
+    // Or if it's a string that needs to be split
+    else if (typeof userData.roles === 'string') {
+      roles = userData.roles.split(",");
+    }
+    // Or try to get roles from the JWT token
+    else if (userData.token) {
+      try {
+        const payload = JSON.parse(atob(userData.token.split('.')[1]));
+        if (payload.roles) {
+          roles = Array.isArray(payload.roles) ? payload.roles : [payload.roles];
+        }
+      } catch (e) {
+        console.error('Error parsing JWT token:', e);
+      }
+    }
+
+    console.log('User roles:', roles);
+
+    // Redirect based on role
+    if (roles.includes('ROLE_ADMIN')) {
+      await router.push({ name: 'DashboardView' });
+    } else if (roles.includes('ROLE_USER')) {
+      await router.push({ name: 'TimeTrackPage' });
+    } else {
+      console.warn('No valid roles found for user');
+      // Redirect to a default route if no valid roles
+      await router.push({ name: 'TimeTrackPage' });
+    }
+  } catch (error) {
+    console.error('Login error details:', {
+      error: error,
+      response: error.response?.data || 'No response data'
+    });
+    showToast("Login yoki parolda xatolik bor. Iltimos, qaytadan urinib ko'ring.", "error");
   }
 };
 

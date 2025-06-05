@@ -2,7 +2,7 @@
   <div class="flex flex-col items-center justify-center min-h-screen">
     <div class="max-w-7xl w-full mx-auto">
       <div class="bg-white ml-auto px-4 py-2 rounded-xl gap-4 flex items-center justify-end">
-          <DropDown @logout="logout" @profile="profile" :userName="userName" />
+        <DropDown @logout="logout" @profile="profile" :userName="userName"/>
       </div>
     </div>
 
@@ -74,20 +74,16 @@ import {useUsersStore} from "@/stores/usersStore";
 
 
 const timeTracks = ref<TimeTrackUser[]>([])
-const userId = Number(localStorage.getItem("userId"));
 const isLoading = ref(false);
 const userName = ref("Foydalanuvchi");
 const usersStore = useUsersStore();
-
+const userId = Number(usersStore.state.currentUser.userId);
 
 
 const fullName = (track: TimeTrackUser) => `${track.firstName} ${track.lastName}  ${track.middleName}`
 
 const startWork = async () => {
   if (isLoading.value) return;
-
-  const rawUserId = localStorage.getItem("userId");
-  const userId = rawUserId ? Number(rawUserId) : null;
 
   if (!userId) {
     alert("Foydalanuvchi aniqlanmadi. Iltimos, qayta tizimga kiring.");
@@ -129,11 +125,6 @@ const loadTimeTrack = async () => {
   try {
     const response = await ApiService.getAllWithUserDetails();
     timeTracks.value = response.data;
-    usersStore.state.users = response.data;
-    console.log(response.data);
-    localStorage.setItem("users", JSON.stringify(response.data));
-    console.log(usersStore.state.users)
-    console.log(timeTracks.value)
   } catch (error) {
     console.log(error);
   }
@@ -153,10 +144,6 @@ const profile = () => {
 }
 
 const logout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("userId");
-  localStorage.removeItem("role");
-  localStorage.removeItem("user");
   router.push("/login");
 };
 
@@ -173,10 +160,9 @@ function formatTimeOnly(time?: string): string {
 }
 
 onMounted(() => {
-  const userStr = localStorage.getItem("user");
-  if (userStr) {
+  const user: any = usersStore.state.currentUser;
+  if (user) {
     try {
-      const user = JSON.parse(userStr);
       userName.value = `${user.firstName} ${user.lastName}`;
     } catch (error) {
       console.error("Foydalanuvchini o'qishda xatolik:", error);

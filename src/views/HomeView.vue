@@ -77,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, ref} from 'vue'
+import {computed, ref} from 'vue'
 import {ApiService} from "@/service/ApiService";
 import type {Department, Job, User} from "@/models/ProjectModels";
 import { useUsersStore } from "@/stores/usersStore";
@@ -139,26 +139,11 @@ const loadJobs = async () => {
 const loadUsers = async () => {
   try {
     const rest = await ApiService.getAllUsers();
-    usersStore.state.users = rest.data
     users.value = rest.data
-    localStorage.setItem('users', JSON.stringify(rest.data));
-    console.log(users.value)
-    console.log(usersStore.state.users)
   } catch (error) {
     console.log(error)
   }
 }
-
-const findCurrentUserId = async () => {
-  const userId = Number(localStorage.getItem('userId'));
-  try {
-    const response = await ApiService.findOneUserId(userId)
-    user.value = response.data;
-  } catch (error) {
-    console.log(error)
-  }
-}
-
 const getJobName = (id: number) => {
   const job = jobs.value.find(j => j.id === id);
   return job ? job.positionStatus : "Nomalum";
@@ -210,17 +195,10 @@ const uniqueJobs = computed(() => {
 });
 
 
-onMounted(() => {
   loadStats()
   loadJobs()
   loadUsers()
-  findCurrentUserId()
   loadDepartments()
   loadPositionStatues()
-})
 
 </script>
-
-<style scoped>
-
-</style>
