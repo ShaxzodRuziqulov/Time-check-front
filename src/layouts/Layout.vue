@@ -15,17 +15,31 @@
 import Header from "@/components/Header.vue";
 import { onMounted } from "vue";
 import { AuthService } from "@/service/AuthService";
-import {useAuthStore} from "@/stores/authStore";
+import { useAuthStore } from "@/stores/authStore";
+import { useRouter } from "vue-router"; // Add this import
+
+const authStore = useAuthStore();
+const router = useRouter(); // Initialize the router
 
 onMounted(async () => {
-  console.log('Layout mounted, fetching user...')
+  console.log('Layout mounted, fetching user...');
   try {
     const user = await AuthService.getCurrentUser();
-    console.log('User from AuthService:', user)
-    console.log('Store after auth:', useAuthStore().state)
+    if (user) {
+      authStore.setUser(user);
+    } else {
+      // If no user but there's a token, clear it as it's invalid
+      if (authStore.state.token) {
+        authStore.clearUser();
+      }
+      router.push('/login');
+    }
   } catch (error) {
-    console.error('Error in Layout mounted:', error)
+    console.error('Error in Layout mounted:', error);
+    if (authStore.state.token) {
+      authStore.clearUser();
+    }
+    router.push('/login');
   }
-})
+});
 </script>
-

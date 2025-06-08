@@ -59,18 +59,21 @@ const form = ref<LoginUser>({
 const router = useRouter();
 const local = useLocalStorage();
 
-// LoginView.vue
 const handleSubmit = async () => {
-  try{
+  try {
     const user = await AuthService.login(form.value);
     authStore.setUser(user);
     authStore.state.token = user.token;
-    local.removeItem('token')
     local.setItem('token', user.token);
     showToast('Muvaffaqiyatli kirish', 'success');
-    router.push('/dashboard');
-  }
-  catch (error) {
+
+    // The router guard will handle the redirect based on roles
+    if (authStore.state.roles?.includes('ROLE_ADMIN')) {
+     await router.push('/dashboard');
+    } else {
+      await router.push('/time-track');
+    }
+  } catch (error) {
     showToast('Kirishda xatolik yuz berdi', 'error');
     console.error(error);
   }

@@ -13,9 +13,12 @@ export const useCustomToast = () => {
       component: CommonToast,
       props: {
         title,
-        type,
+        type
       },
+      timeout: 2000,
+      position: "top-right",
     });
+
   };
 
   return { showToast };

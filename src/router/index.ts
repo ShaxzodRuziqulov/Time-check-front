@@ -75,35 +75,39 @@ const router = createRouter({
 })
 
 
-router.beforeEach(async (to, _, next) => {
-    const authStore = useAuthStore()
-    const token = authStore.state.token
-    const isAuthenticated = !!token
-    const isLoginPage = to.name === 'Login'
-    let roles: string[] = authStore.state.roles || []
+router.beforeEach(async (to, from, next) => {
+    const authStore = useAuthStore();
+    const token = authStore.state.token;
+    const isAuthenticated = !!token;
+    const isLoginPage = to.name === 'Login';
 
+    // If user is not authenticated and trying to access protected route, redirect to login
     if (to.meta.requiresAuth && !isAuthenticated) {
-        return next({ name: 'Login' })
+        return next({ name: 'Login' });
     }
 
+    // If user is authenticated and on login page, redirect based on role
     if (isAuthenticated && isLoginPage) {
-        if (roles?.includes('ROLE_ADMIN')) {
-            return next('/dashboard')
-        } else if (roles?.includes('ROLE_USER')) {
-            return next('/time-track')
+        if (authStore.state.roles?.includes('ROLE_ADMIN')) {
+            return next('/dashboard');
+        } else if (authStore.state.roles?.includes('ROLE_USER')) {
+            return next('/time-track');
         }
     }
 
+    // If user is authenticated but trying to access admin route without admin role
     if (
         isAuthenticated &&
         to.path.startsWith('/admin') &&
-        !authStore.state.user?.roles?.includes('ROLE_ADMIN')
+        !authStore.state.roles?.includes('ROLE_ADMIN')
     ) {
-        return next('/')
+        // Redirect to time-track for regular users trying to access admin routes
+        return next('/time-track');
     }
 
-    next()
-})
+    // For all other cases, proceed with the navigation
+    next();
+});
 
 
 

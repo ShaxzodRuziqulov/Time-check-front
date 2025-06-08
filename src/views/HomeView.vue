@@ -110,8 +110,8 @@ const loadStats = async () => {
       departmentCount.value = department.data
 
     }
-  } catch (err) {
-    console.log(err)
+  } catch (error) {
+    console.log(error)
   }
 }
 
