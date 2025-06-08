@@ -6,5 +6,5 @@ import definePlugins from "@/plugins";
 const app = createApp(App)
 
 app.use(router)
-app.mount('#app')
 definePlugins(app)
+app.mount('#app')

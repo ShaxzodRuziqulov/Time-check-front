@@ -40,6 +40,11 @@
         />
       </div>
     </div>
+    <div>
+      <router-link to="/change-password" class="text-blue-600 hover:text-blue-300">
+        Parolni o'zgartirish
+      </router-link>
+    </div>
 
     <div  class="flex justify-end gap-3 mt-6">
       <button
@@ -92,7 +97,7 @@ const hasChanges = computed(() =>
     form.middleName !== originalData.middleName ||
     form.birthDate !== originalData.birthDate
 );
-
+console.log(user.value)
 // Save changes
 const saveChanges = async () => {
   if (!user.value?.id) return;
@@ -108,7 +113,13 @@ const saveChanges = async () => {
   }
 };
 
-const cancelEdit = () => router.go(-1);
+const cancelEdit = () => {
+  if (authStore.state.roles?.includes('ROLE_ADMIN')) {
+    router.push('/dashboard');
+  } else {
+    router.push('/time-track');
+  }
+}
 // Watch for user data to be available
 watch(() => user.value, (newUser) => {
   if (newUser) {

@@ -22,7 +22,6 @@ axiosInstance.interceptors.response.use(
     error => {
         if (error.response && (error.response.status === 403 || error.response.status === 401)) {
             localStorage.removeItem("token");
-
             router.push({name: "Login"}).then(r => r);
         }
         return Promise.reject(error);
