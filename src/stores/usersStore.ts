@@ -1,42 +1,36 @@
-// usersStore.ts
-import { defineStore } from "pinia";
-import { computed, reactive } from "vue";
-import { IUser } from "@/types/interfaces/IUser";
-import { ApiService } from "@/service/ApiService";
-import axiosInstance from "@/axios";
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+import { IUser } from '@/types/interfaces/IUser';
+import { ApiService } from '@/service/ApiService';
+import axiosInstance from '@/axios';
 
 export const useUsersStore = defineStore('usersStore', () => {
-    const state = reactive({
-        users: [] as IUser[],
-        currentUser: {} as IUser,
-        isLoading: false
-    });
+    const users = ref<IUser[]>([]);
+    const currentUser = ref<IUser | null>(null);
+    const isLoading = ref(false);
 
     const getUsersWithDetails = async () => {
         try {
-            state.isLoading = true;
+            isLoading.value = true;
             const response = await ApiService.getAllWithUserDetails();
-            state.users = Array.isArray(response?.data) ? response.data : [];
-            return state.users;
+            users.value = Array.isArray(response?.data) ? response.data : [];
+            return users.value;
         } catch (error) {
-            console.error('Xatolik yuz berdi:', error);
-            state.users = [];
+            console.error('Ошибка при получении пользователей:', error);
+            users.value = [];
             throw error;
         } finally {
-            state.isLoading = false;
+            isLoading.value = false;
         }
     };
 
     const setCurrentUser = (userData: IUser) => {
         if (!userData) {
-            console.error('No user data provided to setCurrentUser');
+            console.error('Пустой объект userData в setCurrentUser');
             return;
         }
 
-        state.currentUser = {
-            ...userData,
-            token: userData.token
-        };
+        currentUser.value = { ...userData };
 
         if (userData.token) {
             axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
@@ -44,38 +38,43 @@ export const useUsersStore = defineStore('usersStore', () => {
     };
 
     const clearCurrentUser = () => {
-        state.currentUser = {} as IUser;
+        currentUser.value = null;
         delete axiosInstance.defaults.headers.common['Authorization'];
     };
 
-    const getCurrentUser = computed(() => state.currentUser);
-    const getToken = computed(() => state.currentUser?.token || '');
-    const isAuthenticated = computed(() => !!state.currentUser?.token);
+    const getCurrentUser = computed(() => currentUser.value);
+    const getToken = computed(() => currentUser.value?.token || '');
+    const isAuthenticated = computed(() => !!currentUser.value?.token);
 
     const loadCurrentUser = async () => {
         try {
-            const response = await ApiService.getAllUsers();
-            const users = response.data;
-            if (state.currentUser?.userId) {
-                const currentUserData = users.find((user: IUser) =>
-                    user.userId === state.currentUser.userId
+            const response = await ApiService.getAllWithUserDetails();
+            const usersData = response.data;
+
+            if (currentUser.value?.userId) {
+                const updatedUser = usersData.find(
+                    (user: IUser) => user.userId === currentUser.value!.userId
                 );
-                if (currentUserData) {
-                    state.currentUser = {
-                        ...currentUserData,
-                        token: state.currentUser.token
+
+                if (updatedUser) {
+                    currentUser.value = {
+                        ...updatedUser,
+                        token: currentUser.value.token // сохраняем токен
                     };
                 }
             }
-            return state.currentUser;
+
+            return currentUser.value;
         } catch (error) {
-            console.error('Xatolik yuz berdi:', error);
+            console.error('Ошибка при обновлении текущего пользователя:', error);
             throw error;
         }
     };
 
     return {
-        state,
+        users,
+        currentUser,
+        isLoading,
         getUsersWithDetails,
         setCurrentUser,
         clearCurrentUser,

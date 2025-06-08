@@ -47,72 +47,32 @@ import {ref} from "vue";
 import {useRouter} from "vue-router";
 import {AuthService} from "@/service/AuthService";
 import {useCustomToast} from "@/composables/useCustomToast";
-import {useUsersStore} from "@/stores/usersStore";
+import {useAuthStore} from "@/stores/authStore";
+import {useLocalStorage} from "@/composables/useLocalStorage";
 
 const { showToast } = useCustomToast();
-const usersStore = useUsersStore();
+const authStore = useAuthStore();
 const form = ref<LoginUser>({
   username: '',
   password: '',
 });
 const router = useRouter();
+const local = useLocalStorage();
 
 // LoginView.vue
 const handleSubmit = async () => {
-  try {
-    console.log('Login form data:', form.value);
-    const userData = await AuthService.login(form.value);
-    console.log('Login response:', userData);
-
-    if (!userData) {
-      throw new Error('No user data received');
-    }
-
-    console.log('User data:', userData);
-    usersStore.setCurrentUser(userData);
-    showToast("Tizimga muvaffaqiyatli kirdingiz", "success");
-
-    // Get roles from the JWT token or user data
-    let roles: string[] = [];
-
-    // Check if roles is an array
-    if (Array.isArray(userData.roles)) {
-      roles = userData.roles;
-    }
-    // Or if it's a string that needs to be split
-    else if (typeof userData.roles === 'string') {
-      roles = userData.roles.split(",");
-    }
-    // Or try to get roles from the JWT token
-    else if (userData.token) {
-      try {
-        const payload = JSON.parse(atob(userData.token.split('.')[1]));
-        if (payload.roles) {
-          roles = Array.isArray(payload.roles) ? payload.roles : [payload.roles];
-        }
-      } catch (e) {
-        console.error('Error parsing JWT token:', e);
-      }
-    }
-
-    console.log('User roles:', roles);
-
-    // Redirect based on role
-    if (roles.includes('ROLE_ADMIN')) {
-      await router.push({ name: 'DashboardView' });
-    } else if (roles.includes('ROLE_USER')) {
-      await router.push({ name: 'TimeTrackPage' });
-    } else {
-      console.warn('No valid roles found for user');
-      // Redirect to a default route if no valid roles
-      await router.push({ name: 'TimeTrackPage' });
-    }
-  } catch (error) {
-    console.error('Login error details:', {
-      error: error,
-      response: error.response?.data || 'No response data'
-    });
-    showToast("Login yoki parolda xatolik bor. Iltimos, qaytadan urinib ko'ring.", "error");
+  try{
+    const user = await AuthService.login(form.value);
+    authStore.setUser(user);
+    authStore.state.token = user.token;
+    local.removeItem('token')
+    local.setItem('token', user.token);
+    showToast('Muvaffaqiyatli kirish', 'success');
+    router.push('/dashboard');
+  }
+  catch (error) {
+    showToast('Kirishda xatolik yuz berdi', 'error');
+    console.error(error);
   }
 };
 

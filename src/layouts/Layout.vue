@@ -13,9 +13,19 @@
 
 <script setup lang="ts">
 import Header from "@/components/Header.vue";
-import {onMounted} from "vue";
-import {useUsersStore} from "@/stores/usersStore";
-onMounted(async ()=>{
-  await useUsersStore().getUsersWithDetails();
+import { onMounted } from "vue";
+import { AuthService } from "@/service/AuthService";
+import {useAuthStore} from "@/stores/authStore";
+
+onMounted(async () => {
+  console.log('Layout mounted, fetching user...')
+  try {
+    const user = await AuthService.getCurrentUser();
+    console.log('User from AuthService:', user)
+    console.log('Store after auth:', useAuthStore().state)
+  } catch (error) {
+    console.error('Error in Layout mounted:', error)
+  }
 })
 </script>
+

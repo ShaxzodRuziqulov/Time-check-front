@@ -1,6 +1,6 @@
 <template>
   <div v-if="isAdmin"
-      class="fixed top-0 left-0 w-full h-16 px-6 bg-gray-800 text-white flex items-center justify-between z-50 shadow-md">
+       class="fixed top-0 left-0 w-full h-16 px-6 bg-gray-800 text-white flex items-center justify-between z-50 shadow-md">
     <a href="/" class="text-2xl font-semibold whitespace-nowrap">EPG</a>
     <div class="flex items-center space-x-4">
       <router-link
@@ -43,43 +43,38 @@
         Ishni boshlash
       </router-link>
     </div>
-      <DropDown @logout="logout" @profile="profile" :userName="userName"/>
+    <DropDown @logout="logout" @profile="profile" :userName="userName"/>
 
 
   </div>
 </template>
 <script setup lang="ts">
 import router from "@/router";
-import {onMounted, ref, computed} from "vue";
+import {computed} from "vue";
 import DropDown from "@/components/DropDown.vue";
-import {useUsersStore} from "@/stores/usersStore";
+import {useAuthStore} from "@/stores/authStore";
 
-const usersStore = useUsersStore();
-const userName = ref("Foydalanuvchi");
-const roles = computed(() => {
-  return usersStore.state.currentUser.roles;
-});
+const authStore = useAuthStore()
+const roles = computed(() => authStore.state.roles || []);
 
-const isAdmin = computed(() => roles.value.includes('ROLE_ADMIN'));
-const isAdminAndUser = computed(() => 
-  roles.value.includes('ROLE_ADMIN') && roles.value.includes('ROLE_USER')
-);
-
-onMounted(() => {
-  const userStr = localStorage.getItem("user");
-  if (userStr) {
-    try {
-      const user = JSON.parse(userStr);
-      userName.value = `${user.firstName} ${user.lastName}`;
-    } catch (e) {
-      console.error("Foydalanuvchini o'qishda xatolik:", e);
-    }
+const userName = computed(() => {
+  try {
+    const user = authStore.state.user;
+    return user ? `${user.firstName} ${user.lastName}`.trim() : "Foydalanuvchi";
+  } catch (error) {
+    console.error("Foydalanuvchini o'qishda xatolik:", error);
+    return "Foydalanuvchi";
   }
 });
 
+const isAdmin = computed(() => roles.value.includes('ROLE_ADMIN'));
+const isAdminAndUser = computed(() =>
+    roles.value.includes('ROLE_ADMIN') && roles.value.includes('ROLE_USER')
+);
+
 
 const logout = () => {
-  usersStore.clearCurrentUser();
+  authStore.clearUser();
   router.push("/login");
 };
 const profile = () => {

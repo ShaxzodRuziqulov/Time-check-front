@@ -1,6 +1,7 @@
 import type { RouteRecordRaw } from "vue-router";
 import { createRouter, createWebHistory } from "vue-router";
-import { useUsersStore } from "@/stores/usersStore";
+import { useAuthStore } from "@/stores/authStore";
+import {computed, ComputedRef} from "vue";
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -75,40 +76,35 @@ const router = createRouter({
 
 
 router.beforeEach(async (to, _, next) => {
-    const usersStore = useUsersStore();
-    const isAuthenticated = usersStore.isAuthenticated;
-    const isLoginPage = to.name === 'Login';
+    const authStore = useAuthStore()
+    const token = authStore.state.token
+    const isAuthenticated = !!token
+    const isLoginPage = to.name === 'Login'
+    let roles: string[] = authStore.state.roles || []
 
-    // Если пользователь не аутентифицирован и пытается получить доступ к защищенному маршруту
     if (to.meta.requiresAuth && !isAuthenticated) {
-        return next({ name: 'Login' });
+        return next({ name: 'Login' })
     }
 
     if (isAuthenticated && isLoginPage) {
-        const user = usersStore.getCurrentUser;
-
-        // Handle both string and string[] cases
-        let roles: string[] = [];
-
-        if (user?.roles) {
-            roles = Array.isArray(user.roles)
-                ? user.roles
-                : user.roles.split(',').map(role => role.trim());
-        }
-
-        if (roles.includes('ROLE_ADMIN')) {
-            return next('/dashboard');
-        } else if (roles.includes('ROLE_USER')) {
-            return next('/time-track');
+        if (roles?.includes('ROLE_ADMIN')) {
+            return next('/dashboard')
+        } else if (roles?.includes('ROLE_USER')) {
+            return next('/time-track')
         }
     }
 
-    if (isAuthenticated && to.path.startsWith('/admin') && !usersStore.getCurrentUser?.roles?.includes('ROLE_ADMIN')) {
-        return next('/');
+    if (
+        isAuthenticated &&
+        to.path.startsWith('/admin') &&
+        !authStore.state.user?.roles?.includes('ROLE_ADMIN')
+    ) {
+        return next('/')
     }
 
-    next();
-});
+    next()
+})
+
 
 
 export default router
