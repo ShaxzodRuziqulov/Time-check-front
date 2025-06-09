@@ -69,15 +69,15 @@ export const ApiService = {
 
 
     async createTimeTrack(timeTrack: createTimeTrack) {
-        const response = await axiosInstance.post(`/api/user/time-track/create`, timeTrack)
+        const response = await axiosInstance.post(`/api/user/time-track/start`, timeTrack)
         return response.data
     },
     async createReasons(timeTrack: createTimeTrack) {
-        const response = await axiosInstance.post(`/api/user/time-track/reason`, timeTrack)
+        const response = await axiosInstance.post(`/api/admin/time-track/reason`, timeTrack)
         return response.data
     },
     async updateTimeTrack(id: number, timeTrack: updateTimeTrack) {
-        return await axiosInstance.put(`/api/user/time-track/update/${id}`, timeTrack)
+        return await axiosInstance.put(`/api/admin/time-track/update/${id}`, timeTrack)
     }, async completeTimeTrack() {
         return await axiosInstance.get(`/api/user/time-track/complete`)
     }, async findAllTimeTracks() {
@@ -85,11 +85,9 @@ export const ApiService = {
     }, async findById(id: number) {
         return await axiosInstance.get(`/api/user/time-track/${id}`)
     }, async deleteTimeTrack(id: number) {
-        return await axiosInstance.delete(`/api/user/time-track/delete/${id}`)
+        return await axiosInstance.delete(`/api/admin/time-track/delete/${id}`)
     }, async getAllWithUserDetails() {
         return await axiosInstance.get('/api/user/time-track/users')
-    }, async checkIfUserCanLeave(id: number) {
-        return await axiosInstance.put(`/api/user/time-track/check/${id}`)
     },
     async pagination(
         page = 0,
@@ -100,8 +98,11 @@ export const ApiService = {
             toDate?: string;
         }
     ) {
-        return await axiosInstance.post(`/api/user/time-track/filter?page=${page}&size=${size}`, filter);
+        return await axiosInstance.post(`/api/admin/time-track/filter?page=${page}&size=${size}`, filter);
     },
+
+
+
     async createTrackSettings(track: createTrackSettings) {
         const response = await axiosInstance.post(`/api/admin/track-settings/create`, track)
         return response.data
