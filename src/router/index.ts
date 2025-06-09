@@ -1,6 +1,7 @@
 import type { RouteRecordRaw } from "vue-router";
 import { createRouter, createWebHistory } from "vue-router";
-import { useUsersStore } from "@/stores/usersStore";
+import { useAuthStore } from "@/stores/authStore";
+import {computed, ComputedRef} from "vue";
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -62,6 +63,11 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import("@/views/LoginView.vue"),
     },
     {
+        path: "/change-password",
+        name: 'ChangePassword',
+        component: () => import("@/views/ChangeUserPasswordView.vue"),
+    },
+    {
         path: '/:pathMatch(.*)*',
         name: 'NotFound',
         component: () => import("@/components/NotFound.vue"),
@@ -74,41 +80,40 @@ const router = createRouter({
 })
 
 
-router.beforeEach(async (to, _, next) => {
-    const usersStore = useUsersStore();
-    const isAuthenticated = usersStore.isAuthenticated;
+router.beforeEach(async (to, from, next) => {
+    const authStore = useAuthStore();
+    const token = authStore.state.token;
+    const isAuthenticated = !!token;
     const isLoginPage = to.name === 'Login';
 
-    // Если пользователь не аутентифицирован и пытается получить доступ к защищенному маршруту
+    // If user is not authenticated and trying to access protected route, redirect to login
     if (to.meta.requiresAuth && !isAuthenticated) {
         return next({ name: 'Login' });
     }
 
+    // If user is authenticated and on login page, redirect based on role
     if (isAuthenticated && isLoginPage) {
-        const user = usersStore.getCurrentUser;
-
-        // Handle both string and string[] cases
-        let roles: string[] = [];
-
-        if (user?.roles) {
-            roles = Array.isArray(user.roles)
-                ? user.roles
-                : user.roles.split(',').map(role => role.trim());
-        }
-
-        if (roles.includes('ROLE_ADMIN')) {
+        if (authStore.state.roles?.includes('ROLE_ADMIN')) {
             return next('/dashboard');
-        } else if (roles.includes('ROLE_USER')) {
+        } else if (authStore.state.roles?.includes('ROLE_USER')) {
             return next('/time-track');
         }
     }
 
-    if (isAuthenticated && to.path.startsWith('/admin') && !usersStore.getCurrentUser?.roles?.includes('ROLE_ADMIN')) {
-        return next('/');
+    // If user is authenticated but trying to access admin route without admin role
+    if (
+        isAuthenticated &&
+        to.path.startsWith('/admin') &&
+        !authStore.state.roles?.includes('ROLE_ADMIN')
+    ) {
+        // Redirect to time-track for regular users trying to access admin routes
+        return next('/time-track');
     }
 
+    // For all other cases, proceed with the navigation
     next();
 });
+
 
 
 export default router

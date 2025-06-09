@@ -284,8 +284,8 @@ const loadTrackSettings = async () => {
   try {
     const rest = await ApiService.getActiveTrackSettings()
     trackSettings.value = rest.data
-  } catch (err) {
-    console.log(err)
+  } catch (error) {
+    console.log(error)
   }
 }
 
@@ -293,8 +293,8 @@ const loadDepartment = async () => {
   try {
     const rest = await ApiService.getAllDepartments()
     departments.value = rest.data
-  } catch (err) {
-    console.log(err)
+  } catch (error) {
+    console.log(error)
   }
 }
 const editMessageTSettings = (track: updateTrackSettings) => {

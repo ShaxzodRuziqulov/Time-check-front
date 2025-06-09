@@ -65,40 +65,35 @@
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, ref} from "vue";
-import {ApiService} from "@/service/ApiService";
-import type {TimeTrackUser,} from "@/models/ProjectModels";
+import { computed, onMounted, ref } from "vue";
+import { ApiService } from "@/service/ApiService";
+import type { TimeTrackUser } from "@/models/ProjectModels";
 import router from "../router";
 import DropDown from "@/components/DropDown.vue";
-import {useUsersStore} from "@/stores/usersStore";
+import { useAuthStore } from "@/stores/authStore";
+import {useCustomToast} from "@/composables/useCustomToast";
 
-
-const timeTracks = ref<TimeTrackUser[]>([])
+const timeTracks = ref<TimeTrackUser[]>([]);
 const isLoading = ref(false);
 const userName = ref("Foydalanuvchi");
-const usersStore = useUsersStore();
-const userId = Number(usersStore.state.currentUser.userId);
+const authStore = useAuthStore();
+const {showToast} = useCustomToast();
 
+const userId = computed(() => authStore.state.user?.id);
 
-const fullName = (track: TimeTrackUser) => `${track.firstName} ${track.lastName}  ${track.middleName}`
+const fullName = (track: TimeTrackUser) =>
+    `${track.firstName} ${track.lastName} ${track.middleName}`.trim();
 
 const startWork = async () => {
-  if (isLoading.value) return;
-
-  if (!userId) {
-    alert("Foydalanuvchi aniqlanmadi. Iltimos, qayta tizimga kiring.");
-    return;
-  }
+  if (isLoading.value || !userId.value) return;
 
   isLoading.value = true;
-
   try {
-    await ApiService.createTimeTrack({userId});
-
-    alert("Ish boshlandi!");
-    await loadTimeTrack()
+    await ApiService.createTimeTrack({ userId: userId.value });
+    showToast("Ish boshlandi!", "success");
+    await loadTimeTrack();
   } catch (error: any) {
-    alert(error?.response?.data?.message || "Xatolik yuz berdi");
+    showToast("Xatolik yuz berdi", "error");
     console.error(error);
   } finally {
     isLoading.value = false;
@@ -111,10 +106,10 @@ const completeWork = async () => {
 
   try {
     await ApiService.completeTimeTrack();
-    alert("Ish vaqti yakunlandi!");
-    await loadTimeTrack()
+    showToast("Ish vaqti yakunlandi!", "success");
+    await loadTimeTrack();
   } catch (error: any) {
-    alert(error?.response?.data?.message || "Xatolik yuz berdi");
+    showToast("Xatolik yuz berdi", "error");
     console.error(error);
   } finally {
     isLoading.value = false;
@@ -126,47 +121,43 @@ const loadTimeTrack = async () => {
     const response = await ApiService.getAllWithUserDetails();
     timeTracks.value = response.data;
   } catch (error) {
-    console.log(error);
+    console.error("Ish vaqtini yuklashda xatolik:", error);
   }
-}
+};
 
 const filteredTimeTracks = computed(() => {
+  if (!userId.value) return [];
   const today = new Date().toISOString().split('T')[0];
-
   return timeTracks.value
-      .filter(track => track.userId === userId && track.date === today)
+      .filter(track => track.userId === userId.value && track.date === today)
       .sort((a, b) => b.id - a.id)
       .slice(0, 1);
 });
 
 const profile = () => {
-  router.push('/time-track/user/profile')
-}
+  router.push('/time-track/user/profile');
+};
 
 const logout = () => {
+  authStore.clearUser();
   router.push("/login");
 };
 
 const today = new Date().toISOString().split('T')[0];
 
 const isDisabled = computed(() => {
-  return filteredTimeTracks.value[0]?.date === today && !!filteredTimeTracks.value[0]?.startTime;
-})
+  return filteredTimeTracks.value[0]?.date === today &&
+      !!filteredTimeTracks.value[0]?.startTime;
+});
 
 function formatTimeOnly(time?: string): string {
-  if (!time) return "";
-  return time.split(':').slice(0, 2).join(':');
-
+  return time ? time.split(':').slice(0, 2).join(':') : "";
 }
 
 onMounted(() => {
-  const user: any = usersStore.state.currentUser;
+  const user = authStore.state.user;
   if (user) {
-    try {
-      userName.value = `${user.firstName} ${user.lastName}`;
-    } catch (error) {
-      console.error("Foydalanuvchini o'qishda xatolik:", error);
-    }
+    userName.value = `${user.firstName || ''} ${user.lastName || ''}`.trim() || "Foydalanuvchi";
   }
   loadTimeTrack();
 });

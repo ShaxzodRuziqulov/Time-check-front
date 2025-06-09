@@ -16,7 +16,7 @@
 </template>
 <script setup lang="ts">
 import { computed } from "vue";
-import {useToast} from "vue-toastification";
+import { useToast } from "vue-toastification";
 
 interface Props {
   type: "success" | "error" | "warning" | "info";

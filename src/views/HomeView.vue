@@ -80,7 +80,6 @@
 import {computed, ref} from 'vue'
 import {ApiService} from "@/service/ApiService";
 import type {Department, Job, User} from "@/models/ProjectModels";
-import { useUsersStore } from "@/stores/usersStore";
 
 const jobCount = ref(0)
 const userCount = ref(0)
@@ -88,9 +87,7 @@ const departmentCount = ref(0)
 const departments = ref<Department[]>([])
 const jobs = ref<Job[]>([])
 const users = ref<User[]>([])
-const user = ref<User>();
 const selectedDepartmentId = ref<number | ''>('');
-const usersStore = useUsersStore();
 
 const positionStatuses = ref<{
   name: string;
@@ -113,8 +110,8 @@ const loadStats = async () => {
       departmentCount.value = department.data
 
     }
-  } catch (err) {
-    console.log(err)
+  } catch (error) {
+    console.log(error)
   }
 }
 

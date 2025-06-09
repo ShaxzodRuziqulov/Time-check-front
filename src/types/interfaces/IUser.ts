@@ -6,7 +6,7 @@ export interface IUser {
     birthDate: string;
     username: string;
     password: string;
-    roles: string[] | string;
+    roles: any;
     userId: number;
     jobId: number;
     userStatus: string;
