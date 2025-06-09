@@ -7,8 +7,8 @@ export const AuthService = {
         const response = await axiosInstance.post("/auth/login", user);
         const data = response.data;
 
-        const authStore = useAuthStore();
-        authStore.setToken(data.token);
+
+        useAuthStore().setToken(data.token);
         return data;
     },
 
@@ -19,10 +19,11 @@ export const AuthService = {
 
         try {
             const response = await axiosInstance.get("/auth/me");
+            useAuthStore().setUser(response.data);
             return response.data;
         } catch (error) {
             console.error("Error fetching current user:", error);
-            localStorage.removeItem("token"); // Clear invalid token
+            localStorage.removeItem("token");
             return null;
         }
     }

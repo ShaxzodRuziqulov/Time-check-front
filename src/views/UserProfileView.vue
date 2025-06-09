@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, watch } from 'vue';
+import { computed, watch, reactive} from 'vue';
 import { useRouter } from 'vue-router';
 import { useCustomToast } from '@/composables/useCustomToast';
 import axiosInstance from '@/axios';
@@ -76,9 +76,9 @@ const router = useRouter();
 const { showToast } = useCustomToast();
 const authStore = useAuthStore();
 const user = computed(() => authStore.state.user);
+console.log(user.value);
 
-// Initialize form with empty values
-const form = reactive({
+let form = reactive({
   id: 0,
   firstName: '',
   lastName: '',
@@ -90,7 +90,6 @@ const form = reactive({
 
 let originalData = JSON.parse(JSON.stringify(form));
 
-// Check for changes
 const hasChanges = computed(() =>
     form.firstName !== originalData.firstName ||
     form.lastName !== originalData.lastName ||
@@ -98,14 +97,24 @@ const hasChanges = computed(() =>
     form.birthDate !== originalData.birthDate
 );
 console.log(user.value)
-// Save changes
+console.log(form);
 const saveChanges = async () => {
   if (!user.value?.id) return;
 
   try {
-    const { data } = await axiosInstance.put(`/api/user/update-profile/${user.value.id}`, form);
+
+    const trimmedForm = {
+      ...form,
+      firstName: form.firstName.trim(),
+      lastName: form.lastName.trim(),
+      middleName: form.middleName.trim()
+    };
+    
+    const { data } = await axiosInstance.put(`/api/user/update-profile/${user.value.id}`, trimmedForm);
     authStore.setUser({ ...user.value, ...data });
     originalData = JSON.parse(JSON.stringify(form));
+    form = JSON.parse(JSON.stringify(originalData));
+    console.log(originalData)
     showToast("Ma'lumotlar yangilandi ✅", 'success');
   } catch (error) {
     console.error('Xatolik:', error);
@@ -122,6 +131,7 @@ const cancelEdit = () => {
 }
 // Watch for user data to be available
 watch(() => user.value, (newUser) => {
+  console.log(newUser);
   if (newUser) {
     Object.assign(form, {
       id: newUser.id,
@@ -130,7 +140,6 @@ watch(() => user.value, (newUser) => {
       middleName: newUser.middleName || '',
       birthDate: newUser.birthDate || ''
     });
-    originalData = JSON.parse(JSON.stringify(form));
   }
 }, { immediate: true });
 </script>

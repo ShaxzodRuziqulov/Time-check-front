@@ -61,13 +61,18 @@ const local = useLocalStorage();
 
 const handleSubmit = async () => {
   try {
-    const user = await AuthService.login(form.value);
+
+    const trimmedForm = {
+      username: form.value.username.trim(),
+      password: form.value.password.trim()
+    };
+    const user = await AuthService.login(trimmedForm);
     authStore.setUser(user);
+    await AuthService.getCurrentUser();
     authStore.state.token = user.token;
     local.setItem('token', user.token);
     showToast('Muvaffaqiyatli kirish', 'success');
 
-    // The router guard will handle the redirect based on roles
     if (authStore.state.roles?.includes('ROLE_ADMIN')) {
      await router.push('/dashboard');
     } else {
