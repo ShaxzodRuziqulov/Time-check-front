@@ -56,7 +56,6 @@ import {useAuthStore} from "@/stores/authStore";
 
 const authStore = useAuthStore()
 const roles = computed(() => authStore.state.roles || []);
-
 const userName = computed(() => {
   try {
     const user = authStore.state.user;

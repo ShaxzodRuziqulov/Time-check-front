@@ -1,7 +1,7 @@
 import type { RouteRecordRaw } from "vue-router";
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
-import {computed, ComputedRef} from "vue";
+import {AuthService} from "@/service/AuthService";
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -80,37 +80,44 @@ const router = createRouter({
 })
 
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _, next) => {
     const authStore = useAuthStore();
     const token = authStore.state.token;
     const isAuthenticated = !!token;
     const isLoginPage = to.name === 'Login';
 
-    // If user is not authenticated and trying to access protected route, redirect to login
+
     if (to.meta.requiresAuth && !isAuthenticated) {
         return next({ name: 'Login' });
     }
 
-    // If user is authenticated and on login page, redirect based on role
+    if (isAuthenticated && (!authStore.state.roles || authStore.state.roles.length === 0)) {
+        try {
+            await AuthService.getCurrentUser();
+        } catch (error) {
+            console.error('Failed to fetch user data:', error);
+            return next({ name: 'Login' });
+        }
+    }
+
+    const roles = authStore.state.roles || [];
+
     if (isAuthenticated && isLoginPage) {
-        if (authStore.state.roles?.includes('ROLE_ADMIN')) {
+        if (roles.includes('ROLE_ADMIN')) {
             return next('/dashboard');
-        } else if (authStore.state.roles?.includes('ROLE_USER')) {
+        } else if (roles.includes('ROLE_USER')) {
             return next('/time-track');
         }
     }
 
-    // If user is authenticated but trying to access admin route without admin role
     if (
         isAuthenticated &&
         to.path.startsWith('/admin') &&
-        !authStore.state.roles?.includes('ROLE_ADMIN')
+        !roles.includes('ROLE_ADMIN')
     ) {
-        // Redirect to time-track for regular users trying to access admin routes
         return next('/time-track');
     }
 
-    // For all other cases, proceed with the navigation
     next();
 });
 
